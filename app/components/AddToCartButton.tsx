@@ -26,26 +26,30 @@ export function AddToCartButton({ product }: { product: Product }) {
 
     setLoading(true)
     try {
-      // Add item to Shopify cart
-      const storeDomain = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN || "burning-palms.myshopify.com"
-      const response = await fetch(`https://${storeDomain}/cart/add.js`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/shopify/cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          items: [{
-            id: selectedVariant,
-            quantity: quantity
-          }]
-        })
+          variantId: selectedVariant,
+          quantity: quantity,
+        }),
       })
 
-      if (response.ok) {
-        // Redirect to Shopify checkout
-        window.location.href = `https://${storeDomain}/checkout`
-      } else {
-        console.error('Failed to add to cart')
-        alert('Failed to add item to cart. Please try again.')
+      const data = await response.json().catch(() => null)
+
+      if (!response.ok) {
+        console.error("Failed to create cart:", data)
+        alert("Failed to add item to cart. Please try again.")
+        return
       }
+
+      if (!data?.checkoutUrl) {
+        console.error("Missing checkoutUrl:", data)
+        alert("Checkout could not be started. Please try again.")
+        return
+      }
+
+      window.location.href = data.checkoutUrl
     } catch (error) {
       console.error('Error adding to cart:', error)
       alert('Error adding item to cart. Please try again.')

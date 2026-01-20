@@ -16,34 +16,36 @@ if [ ! -f "${SQL_FILE}" ]; then
   exit 1
 fi
 
-if ! command -v psql >/dev/null 2>&1; then
+PSQL_BIN="$(command -v psql 2>/dev/null || true)"
+if [ -z "${PSQL_BIN}" ] && [ -x "/opt/homebrew/opt/libpq/bin/psql" ]; then
+  PSQL_BIN="/opt/homebrew/opt/libpq/bin/psql"
+fi
+
+if [ -z "${PSQL_BIN}" ]; then
   echo "❌ psql not found."
-  echo "Install Postgres client tools, e.g.: brew install libpq && brew link --force libpq"
+  echo "Install Postgres client tools:"
+  echo "  brew install libpq"
+  echo "Then add it to PATH:"
+  echo "  echo 'export PATH=\"/opt/homebrew/opt/libpq/bin:$PATH\"' >> ~/.zshrc"
+  echo "  source ~/.zshrc"
   exit 1
 fi
 
-DATABASE_URL="$(grep "^DATABASE_URL=" "${ENV_FILE}" | head -1 | cut -d '=' -f2- | sed 's/^"//;s/"$//' | tr -d '"')"
+DATABASE_URL="$(grep "^DATABASE_URL=" "${ENV_FILE}" | head -1 | cut -d '=' -f2- | sed 's/^"//;s/"$//' | tr -d '"' | tr -d '\r')"
 
 if [ -z "${DATABASE_URL}" ]; then
   echo "❌ DATABASE_URL not found in .env.production"
   exit 1
 fi
 
-# Ensure sslmode=require for Supabase
-if [[ "${DATABASE_URL}" != *"sslmode="* ]]; then
-  if [[ "${DATABASE_URL}" == *"?"* ]]; then
-    DATABASE_URL="${DATABASE_URL}&sslmode=require"
-  else
-    DATABASE_URL="${DATABASE_URL}?sslmode=require"
-  fi
-fi
+export PGSSLMODE="require"
 
 echo "🚀 Bootstrapping Supabase schema via psql..."
 echo "   (This may take ~10-30s)"
 echo ""
 
 # Use ON_ERROR_STOP so any failure exits non-zero
-psql "${DATABASE_URL}" -v ON_ERROR_STOP=1 -f "${SQL_FILE}"
+"${PSQL_BIN}" "${DATABASE_URL}" -v ON_ERROR_STOP=1 -f "${SQL_FILE}"
 
 echo ""
 echo "✅ Supabase schema bootstrap completed."

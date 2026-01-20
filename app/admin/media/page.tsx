@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import Image from "next/image"
+import { compressImageFile } from "@/lib/image-compress"
 
 type MediaFile = {
   id: string
@@ -49,7 +50,16 @@ export default function MediaPage() {
 
     setUploading(true)
     const formData = new FormData()
-    formData.append("file", file)
+    const compressed = await compressImageFile(file).catch(() => file)
+    if (compressed.size > 4_000_000) {
+      alert("File is too large. Please upload an image under ~4MB.")
+      setUploading(false)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""
+      }
+      return
+    }
+    formData.append("file", compressed)
 
     try {
       const response = await fetch("/api/admin/media", {

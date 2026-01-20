@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import { compressImageFile } from "@/lib/image-compress"
 import {
   DndContext,
   closestCenter,
@@ -761,7 +762,16 @@ function SectionSettingsPanel({
   const uploadHeroBackground = async (file: File) => {
     setUploadingHeroBg(true)
     const formData = new FormData()
-    formData.append("file", file)
+    const compressed = await compressImageFile(file).catch(() => file)
+    if (compressed.size > 4_000_000) {
+      alert("Image is too large. Please choose a smaller image (target under ~4MB).")
+      setUploadingHeroBg(false)
+      if (heroBgFileRef.current) {
+        heroBgFileRef.current.value = ""
+      }
+      return
+    }
+    formData.append("file", compressed)
     formData.append("alt", "Hero background")
 
     try {

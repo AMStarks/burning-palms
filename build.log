@@ -1,0 +1,83 @@
+
+> burning-palms@0.1.0 build
+> prisma generate && next build
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v5.19.1) to ./node_modules/@prisma/client in 148ms
+
+Start by importing your Prisma Client (See: http://pris.ly/d/importing-client)
+
+Tip: Want to turn off tips and other hints? https://pris.ly/tip-4-nohints
+
+⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of /Users/starkers/Projects/package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * /Users/starkers/Projects/Burning Palms/package-lock.json
+
+▲ Next.js 16.1.1 (Turbopack)
+- Environments: .env.local, .env
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 1390.3ms
+  Running TypeScript ...
+  Collecting page data using 11 workers ...
+Storefront API Client: the provided apiVersion ("2024-01") is likely deprecated or not supported. Currently supported API versions: 2025-04, 2025-07, 2025-10, 2026-01, 2026-04, unstable
+Storefront API Client: the provided apiVersion ("2024-01") is likely deprecated or not supported. Currently supported API versions: 2025-04, 2025-07, 2025-10, 2026-01, 2026-04, unstable
+Storefront API Client: the provided apiVersion ("2024-01") is likely deprecated or not supported. Currently supported API versions: 2025-04, 2025-07, 2025-10, 2026-01, 2026-04, unstable
+  Generating static pages using 11 workers (0/28) ...
+  Generating static pages using 11 workers (7/28) 
+Storefront API Client: the provided apiVersion ("2024-01") is likely deprecated or not supported. Currently supported API versions: 2025-04, 2025-07, 2025-10, 2026-01, 2026-04, unstable
+Storefront API Client: the provided apiVersion ("2024-01") is likely deprecated or not supported. Currently supported API versions: 2025-04, 2025-07, 2025-10, 2026-01, 2026-04, unstable
+  Generating static pages using 11 workers (14/28) 
+  Generating static pages using 11 workers (21/28) 
+✓ Generating static pages using 11 workers (28/28) in 329.6ms
+  Finalizing page optimization ...
+
+Route (app)                                                    Revalidate  Expire
+┌ ƒ /
+├ ○ /_not-found
+├ ƒ /admin
+├ ○ /admin/footer-widgets
+├ ○ /admin/login
+├ ○ /admin/media
+├ ○ /admin/menus
+├ ○ /admin/page-builder
+├ ○ /admin/pages
+├ ƒ /admin/pages/[id]
+├ ○ /admin/pages/new
+├ ○ /admin/posts
+├ ƒ /admin/posts/[id]
+├ ○ /admin/posts/new
+├ ○ /admin/settings
+├ ○ /admin/sidebar-widgets
+├ ƒ /api/admin/footer-widgets
+├ ƒ /api/admin/media
+├ ƒ /api/admin/media/[id]
+├ ƒ /api/admin/menus
+├ ƒ /api/admin/menus/[id]
+├ ƒ /api/admin/page-sections
+├ ƒ /api/admin/page-sections/[id]
+├ ƒ /api/admin/pages
+├ ƒ /api/admin/pages-list
+├ ƒ /api/admin/pages/[id]
+├ ƒ /api/admin/posts
+├ ƒ /api/admin/posts/[id]
+├ ƒ /api/admin/settings
+├ ƒ /api/admin/sidebar-widgets
+├ ƒ /api/auth/[...nextauth]
+├ ƒ /api/test-shopify
+├ ○ /login
+└ ● /products/[handle]                                                 1m      1y
+  ├ /products/raw-edge-cotton-tank-top                                 1m      1y
+  ├ /products/snow-washed-tape-raw-edge-hoodie                         1m      1y
+  └ /products/vintage-washed-oversized-cotton-t-shirt-1221381          1m      1y
+
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+ƒ  (Dynamic)  server-rendered on demand
+

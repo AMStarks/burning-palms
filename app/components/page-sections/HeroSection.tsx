@@ -8,20 +8,22 @@ type HeroSectionProps = {
 export async function HeroSection({ settings, content }: HeroSectionProps) {
   const siteSettings = await getSiteSettings()
   
-  const paddingClass = {
+  const paddingMap: Record<string, string> = {
     none: "py-0",
     small: "py-4",
     normal: "py-8",
     large: "py-16",
     xlarge: "py-24",
-  }[settings?.padding || "normal"]
+  }
+  const paddingClass = paddingMap[settings?.padding || "normal"] || paddingMap.normal
 
-  const heightClass = {
+  const heightMap: Record<string, string> = {
     "50vh": "min-h-[50vh]",
     "60vh": "min-h-[60vh]",
     "80vh": "min-h-[80vh]",
     "100vh": "min-h-screen",
-  }[settings?.height || "80vh"]
+  }
+  const heightClass = heightMap[settings?.height || "80vh"] || heightMap["80vh"]
 
   const backgroundColor = settings?.backgroundColor || "transparent"
   const textColor = settings?.textColor || "inherit"

@@ -9,7 +9,7 @@ export type FooterWidget = {
   id: string
   columnIndex: number
   title: string | null
-  type: string
+  type: "text" | "links"
   content: string | null
   order: number
 }

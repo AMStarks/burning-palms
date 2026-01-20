@@ -6,30 +6,33 @@ type ImageSectionProps = {
 }
 
 export async function ImageSection({ settings, content }: ImageSectionProps) {
-  const paddingClass = {
+  const paddingMap: Record<string, string> = {
     none: "py-0",
     small: "py-4",
     normal: "py-16",
     large: "py-24",
     xlarge: "py-32",
-  }[settings?.padding || "normal"]
+  }
+  const paddingClass = paddingMap[settings?.padding || "normal"] || paddingMap.normal
 
-  const spacingClass = {
+  const spacingMap: Record<string, string> = {
     none: "mb-0",
     small: "mb-6",
     normal: "mb-12",
     large: "mb-20",
     xlarge: "mb-32",
-  }[settings?.spacing || "normal"]
+  }
+  const spacingClass = spacingMap[settings?.spacing || "normal"] || spacingMap.normal
 
-  const maxWidthClass = {
+  const maxWidthMap: Record<string, string> = {
     sm: "max-w-sm",
     md: "max-w-md",
     lg: "max-w-lg",
     xl: "max-w-xl",
     "2xl": "max-w-2xl",
     full: "max-w-7xl",
-  }[settings?.maxWidth || "full"]
+  }
+  const maxWidthClass = maxWidthMap[settings?.maxWidth || "full"] || maxWidthMap.full
 
   const backgroundColor = settings?.backgroundColor || "transparent"
   const textColor = settings?.textColor || "inherit"

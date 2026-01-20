@@ -43,20 +43,22 @@ export function PagePreview({ sections, selectedSectionId, onSectionClick }: Pag
 
   // Client-side version of HeroSection - matches server component exactly
   const HeroSectionPreview = ({ settings, content }: { settings: any; content: any }) => {
-    const paddingClass = {
+    const paddingMap: Record<string, string> = {
       none: "py-0",
       small: "py-4",
       normal: "py-8",
       large: "py-16",
       xlarge: "py-24",
-    }[settings?.padding || "normal"]
+    }
+    const paddingClass = paddingMap[settings?.padding || "normal"] || paddingMap.normal
 
-    const heightClass = {
+    const heightMap: Record<string, string> = {
       "50vh": "min-h-[50vh]",
       "60vh": "min-h-[60vh]",
       "80vh": "min-h-[80vh]",
       "100vh": "min-h-screen",
-    }[settings?.height || "80vh"]
+    }
+    const heightClass = heightMap[settings?.height || "80vh"] || heightMap["80vh"]
 
     const backgroundColor = settings?.backgroundColor || "transparent"
     const textColor = settings?.textColor || "inherit"
@@ -100,30 +102,33 @@ export function PagePreview({ sections, selectedSectionId, onSectionClick }: Pag
 
   // Client-side version of ProductsSection - matches server component exactly
   const ProductsSectionPreview = ({ settings, content }: { settings: any; content: any }) => {
-    const paddingClass = {
+    const paddingMap: Record<string, string> = {
       none: "py-0",
       small: "py-4",
       normal: "py-16",
       large: "py-24",
       xlarge: "py-32",
-    }[settings?.padding || "normal"]
+    }
+    const paddingClass = paddingMap[settings?.padding || "normal"] || paddingMap.normal
 
-    const spacingClass = {
+    const spacingMap: Record<string, string> = {
       none: "mb-0",
       small: "mb-6",
       normal: "mb-12",
       large: "mb-20",
       xlarge: "mb-32",
-    }[settings?.spacing || "normal"]
+    }
+    const spacingClass = spacingMap[settings?.spacing || "normal"] || spacingMap.normal
 
-    const maxWidthClass = {
+    const maxWidthMap: Record<string, string> = {
       sm: "max-w-sm",
       md: "max-w-md",
       lg: "max-w-lg",
       xl: "max-w-xl",
       "2xl": "max-w-2xl",
       full: "max-w-7xl",
-    }[settings?.maxWidth || "full"]
+    }
+    const maxWidthClass = maxWidthMap[settings?.maxWidth || "full"] || maxWidthMap.full
 
     const backgroundColor = settings?.backgroundColor || "transparent"
     const textColor = settings?.textColor || "inherit"
@@ -168,36 +173,40 @@ export function PagePreview({ sections, selectedSectionId, onSectionClick }: Pag
 
   // Client-side version of AboutSection - matches server component exactly
   const AboutSectionPreview = ({ settings, content }: { settings: any; content: any }) => {
-    const paddingClass = {
+    const paddingMap: Record<string, string> = {
       none: "py-0",
       small: "py-4",
       normal: "py-16",
       large: "py-24",
       xlarge: "py-32",
-    }[settings?.padding || "normal"]
+    }
+    const paddingClass = paddingMap[settings?.padding || "normal"] || paddingMap.normal
 
-    const spacingClass = {
+    const spacingMap: Record<string, string> = {
       none: "mb-0",
       small: "mb-6",
       normal: "mb-12",
       large: "mb-20",
       xlarge: "mb-32",
-    }[settings?.spacing || "normal"]
+    }
+    const spacingClass = spacingMap[settings?.spacing || "normal"] || spacingMap.normal
 
-    const maxWidthClass = {
+    const maxWidthMap: Record<string, string> = {
       sm: "max-w-sm",
       md: "max-w-md",
       lg: "max-w-lg",
       xl: "max-w-xl",
       "2xl": "max-w-2xl",
       full: "max-w-7xl",
-    }[settings?.maxWidth || "full"]
+    }
+    const maxWidthClass = maxWidthMap[settings?.maxWidth || "full"] || maxWidthMap.full
 
-    const textAlignClass = {
+    const textAlignMap: Record<string, string> = {
       left: "text-left",
       center: "text-center",
       right: "text-right",
-    }[settings?.textAlign || "center"]
+    }
+    const textAlignClass = textAlignMap[settings?.textAlign || "center"] || textAlignMap.center
 
     const backgroundColor = settings?.backgroundColor || "transparent"
     const textColor = settings?.textColor || "inherit"
@@ -227,30 +236,33 @@ export function PagePreview({ sections, selectedSectionId, onSectionClick }: Pag
 
   // Client-side version of ImageSection - matches server component exactly
   const ImageSectionPreview = ({ settings, content }: { settings: any; content: any }) => {
-    const paddingClass = {
+    const paddingMap: Record<string, string> = {
       none: "py-0",
       small: "py-4",
       normal: "py-16",
       large: "py-24",
       xlarge: "py-32",
-    }[settings?.padding || "normal"]
+    }
+    const paddingClass = paddingMap[settings?.padding || "normal"] || paddingMap.normal
 
-    const spacingClass = {
+    const spacingMap: Record<string, string> = {
       none: "mb-0",
       small: "mb-6",
       normal: "mb-12",
       large: "mb-20",
       xlarge: "mb-32",
-    }[settings?.spacing || "normal"]
+    }
+    const spacingClass = spacingMap[settings?.spacing || "normal"] || spacingMap.normal
 
-    const maxWidthClass = {
+    const maxWidthMap: Record<string, string> = {
       sm: "max-w-sm",
       md: "max-w-md",
       lg: "max-w-lg",
       xl: "max-w-xl",
       "2xl": "max-w-2xl",
       full: "max-w-7xl",
-    }[settings?.maxWidth || "full"]
+    }
+    const maxWidthClass = maxWidthMap[settings?.maxWidth || "full"] || maxWidthMap.full
 
     const backgroundColor = settings?.backgroundColor || "transparent"
     const textColor = settings?.textColor || "inherit"

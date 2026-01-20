@@ -7,18 +7,32 @@ export const dynamic = 'force-dynamic'
 export default async function AdminDashboard() {
   const session = await getServerSession()
   
-  const [pagesCount, postsCount, settingsCount, mediaCount] = await Promise.all([
-    prisma.page.count(),
-    prisma.post.count(),
-    prisma.setting.count(),
-    prisma.media.count(),
-  ])
+  let [pagesCount, postsCount, settingsCount, mediaCount] = [0, 0, 0, 0]
+  let recentPages: Array<{
+    id: string
+    title: string
+    slug: string
+    status: string
+    updatedAt: Date
+    author: { name: string | null; email: string } | null
+  }> = []
+  
+  try {
+    [pagesCount, postsCount, settingsCount, mediaCount] = await Promise.all([
+      prisma.page.count().catch(() => 0),
+      prisma.post.count().catch(() => 0),
+      prisma.setting.count().catch(() => 0),
+      prisma.media.count().catch(() => 0),
+    ])
 
-  const recentPages = await prisma.page.findMany({
-    take: 5,
-    orderBy: { updatedAt: 'desc' },
-    include: { author: { select: { name: true, email: true } } },
-  })
+    recentPages = await prisma.page.findMany({
+      take: 5,
+      orderBy: { updatedAt: 'desc' },
+      include: { author: { select: { name: true, email: true } } },
+    }).catch(() => [])
+  } catch (error) {
+    console.error("Error fetching admin dashboard data:", error)
+  }
 
   return (
     <div>
@@ -127,7 +141,7 @@ export default async function AdminDashboard() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {page.author.name || page.author.email}
+                      {page.author?.name || page.author?.email || 'Unknown'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {new Date(page.updatedAt).toLocaleDateString()}

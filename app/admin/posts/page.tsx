@@ -1,11 +1,26 @@
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 
+export const dynamic = 'force-dynamic'
+
 export default async function PostsPage() {
-  const posts = await prisma.post.findMany({
-    include: { author: { select: { name: true, email: true } } },
-    orderBy: { updatedAt: "desc" },
-  })
+  let posts: Array<{
+    id: string
+    title: string
+    slug: string
+    status: string
+    updatedAt: Date
+    author: { name: string | null; email: string } | null
+  }> = []
+  try {
+    posts = await prisma.post.findMany({
+      include: { author: { select: { name: true, email: true } } },
+      orderBy: { updatedAt: "desc" },
+    })
+  } catch (error) {
+    console.error("Error fetching posts:", error)
+    posts = []
+  }
 
   return (
     <div>
@@ -81,7 +96,7 @@ export default async function PostsPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {post.author.name || post.author.email}
+                    {post.author?.name || post.author?.email || 'Unknown'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {new Date(post.updatedAt).toLocaleDateString()}

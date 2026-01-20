@@ -1,11 +1,26 @@
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 
+export const dynamic = 'force-dynamic'
+
 export default async function PagesPage() {
-  const pages = await prisma.page.findMany({
-    include: { author: { select: { name: true, email: true } } },
-    orderBy: { updatedAt: "desc" },
-  })
+  let pages: Array<{
+    id: string
+    title: string
+    slug: string
+    status: string
+    updatedAt: Date
+    author: { name: string | null; email: string } | null
+  }> = []
+  try {
+    pages = await prisma.page.findMany({
+      include: { author: { select: { name: true, email: true } } },
+      orderBy: { updatedAt: "desc" },
+    })
+  } catch (error) {
+    console.error("Error fetching pages:", error)
+    pages = []
+  }
 
   return (
     <div>
@@ -81,7 +96,7 @@ export default async function PagesPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {page.author.name || page.author.email}
+                    {page.author?.name || page.author?.email || 'Unknown'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {new Date(page.updatedAt).toLocaleDateString()}

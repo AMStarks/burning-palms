@@ -9,6 +9,7 @@
     "lint": "eslint",
     "db:seed": "tsx prisma/seed.ts",
     "db:push": "prisma db push",
+    "db:push:prod": "tsx scripts/push-db-schema.ts",
     "postinstall": "prisma generate"
   },
   "prisma": {

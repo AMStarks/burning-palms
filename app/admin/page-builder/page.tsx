@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import {
   DndContext,
   closestCenter,
@@ -734,6 +734,9 @@ function SectionSettingsPanel({
   section: PageSection
   onUpdate: (updates: Partial<PageSection>) => void
 }) {
+  const [uploadingHeroBg, setUploadingHeroBg] = useState(false)
+  const heroBgFileRef = useRef<HTMLInputElement>(null)
+
   const settings = section.settings
     ? JSON.parse(section.settings)
     : { padding: "normal", spacing: "normal", backgroundColor: "", textColor: "" }
@@ -753,6 +756,37 @@ function SectionSettingsPanel({
   const updateContent = (key: string, value: any) => {
     const newContent = { ...content, [key]: value }
     onUpdate({ content: JSON.stringify(newContent) })
+  }
+
+  const uploadHeroBackground = async (file: File) => {
+    setUploadingHeroBg(true)
+    const formData = new FormData()
+    formData.append("file", file)
+    formData.append("alt", "Hero background")
+
+    try {
+      const response = await fetch("/api/admin/media", {
+        method: "POST",
+        body: formData,
+      })
+
+      if (!response.ok) {
+        throw new Error("Upload failed")
+      }
+
+      const media = await response.json()
+      if (media?.url) {
+        updateContent("backgroundImageUrl", media.url)
+      }
+    } catch (error) {
+      console.error("Error uploading hero background:", error)
+      alert("Failed to upload hero background")
+    } finally {
+      setUploadingHeroBg(false)
+      if (heroBgFileRef.current) {
+        heroBgFileRef.current.value = ""
+      }
+    }
   }
 
   return (
@@ -891,6 +925,49 @@ function SectionSettingsPanel({
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Hero Content</h3>
             <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Background Image
+                </label>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={content.backgroundImageUrl || ""}
+                      onChange={(e) => updateContent("backgroundImageUrl", e.target.value)}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
+                      placeholder="/uploads/your-image.jpg"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => updateContent("backgroundImageUrl", "")}
+                      className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm"
+                      title="Clear"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                  <label className="block">
+                    <div className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer text-sm text-center">
+                      {uploadingHeroBg ? "Uploading..." : "Upload Image"}
+                    </div>
+                    <input
+                      ref={heroBgFileRef}
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      disabled={uploadingHeroBg}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) uploadHeroBackground(file)
+                      }}
+                    />
+                  </label>
+                  <p className="text-xs text-gray-500">
+                    Uploads go to Media and will be applied after you click Save.
+                  </p>
+                </div>
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Title

@@ -65,6 +65,7 @@ export function PagePreview({ sections, selectedSectionId, onSectionClick }: Pag
 
     const title = content?.title || siteSettings.title.toUpperCase()
     const subtitle = content?.subtitle || siteSettings.tagline
+    const backgroundImageUrl = content?.backgroundImageUrl || ""
 
     return (
       <section
@@ -72,6 +73,9 @@ export function PagePreview({ sections, selectedSectionId, onSectionClick }: Pag
         style={{
           backgroundColor: backgroundColor !== "transparent" ? backgroundColor : undefined,
           color: textColor !== "inherit" ? textColor : undefined,
+          backgroundImage: backgroundImageUrl ? `url(${backgroundImageUrl})` : undefined,
+          backgroundSize: backgroundImageUrl ? "cover" : undefined,
+          backgroundPosition: backgroundImageUrl ? "center" : undefined,
         }}
       >
         <div className="absolute inset-0 bg-gradient-to-br from-accent-yellow/10 via-background to-accent-orange/10"></div>

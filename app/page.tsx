@@ -14,6 +14,9 @@ import { getSidebarLayoutClasses } from "@/lib/layout-settings";
 import { getPageSections } from "@/lib/page-sections";
 import { SectionRenderer } from "@/app/components/page-sections";
 
+// Mark as dynamic to prevent static generation issues with database
+export const dynamic = 'force-dynamic'
+
 export default async function Home() {
   const siteSettings = await getSiteSettings();
   const productSettings = await getProductDisplaySettings();

@@ -564,13 +564,20 @@ export default function PageBuilderPage() {
             <div className="w-full h-full bg-white shadow-2xl overflow-y-auto flex flex-col">
               <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between z-40 shadow-sm">
                 <h2 className="text-lg font-bold text-gray-900">Section Settings</h2>
-                <button
-                  onClick={() => setSelectedSection(null)}
-                  className="text-gray-500 hover:text-gray-700 text-2xl leading-none w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100"
-                  title="Close"
-                >
-                  ×
-                </button>
+                <div className="flex items-center gap-2">
+                  {hasUnsavedChanges && (
+                    <span className="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded">
+                      Unsaved
+                    </span>
+                  )}
+                  <button
+                    onClick={() => setSelectedSection(null)}
+                    className="text-gray-500 hover:text-gray-700 text-2xl leading-none w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100"
+                    title="Close"
+                  >
+                    ×
+                  </button>
+                </div>
               </div>
               <div className="flex-1 overflow-y-auto p-4">
                 <SectionSettingsPanel
@@ -579,6 +586,15 @@ export default function PageBuilderPage() {
                     updateSection(selectedSection.id, updates)
                   }}
                 />
+              </div>
+              <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 z-40">
+                <button
+                  onClick={() => saveSections()}
+                  disabled={saving || !hasUnsavedChanges}
+                  className="w-full px-4 py-2 bg-accent-orange text-white rounded-lg hover:bg-accent-orange/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {saving ? "Saving..." : "Save Changes"}
+                </button>
               </div>
             </div>
           )}

@@ -53,6 +53,7 @@ export default function PageBuilderPage() {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState("")
   const [selectedSection, setSelectedSection] = useState<PageSection | null>(null)
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [showNewPageDialog, setShowNewPageDialog] = useState(false)
   const [newPageTitle, setNewPageTitle] = useState("")
   const [newPageSlug, setNewPageSlug] = useState("")
@@ -68,8 +69,6 @@ export default function PageBuilderPage() {
 
   useEffect(() => {
     fetchPages()
-    // Fetch homepage sections on initial load (selectedPageId is null)
-    fetchSections(null)
   }, [])
 
   useEffect(() => {
@@ -114,6 +113,7 @@ export default function PageBuilderPage() {
         const data = await res.json()
         console.log("Fetched sections data:", data, "Array length:", Array.isArray(data) ? data.length : "not an array")
         setSections(Array.isArray(data) ? data : [])
+        setHasUnsavedChanges(false)
       } else {
         console.error("Failed to fetch sections:", res.statusText)
         const errorData = await res.json().catch(() => ({}))
@@ -159,6 +159,7 @@ export default function PageBuilderPage() {
 
       if (res.ok) {
         setMessage("Sections saved successfully!")
+        setHasUnsavedChanges(false)
         setTimeout(() => setMessage(""), 3000)
       } else {
         setMessage("Failed to save sections")
@@ -337,32 +338,18 @@ export default function PageBuilderPage() {
     }
   }
 
-  const updateSection = async (id: string, updates: Partial<PageSection>) => {
-    try {
-      const section = sections.find((s) => s.id === id)
-      if (!section) return
+  const updateSection = (id: string, updates: Partial<PageSection>) => {
+    const section = sections.find((s) => s.id === id)
+    if (!section) return
 
-      const updated = { ...section, ...updates }
-      const res = await fetch(`/api/admin/page-sections/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updates),
-      })
+    const updated = { ...section, ...updates }
 
-      if (res.ok) {
-        // Update local state immediately for instant preview
-        setSections((prev) =>
-          prev.map((s) => (s.id === id ? { ...s, ...updates } : s))
-        )
-        if (selectedSection?.id === id) {
-          setSelectedSection(updated)
-        }
-        // Then fetch fresh data from server
-        await fetchSections()
-      }
-    } catch (error) {
-      console.error("Error updating section:", error)
+    // Update local state only; user must click "Save Changes" to persist.
+    setSections((prev) => prev.map((s) => (s.id === id ? updated : s)))
+    if (selectedSection?.id === id) {
+      setSelectedSection(updated)
     }
+    setHasUnsavedChanges(true)
   }
 
   if (loading) {
@@ -482,7 +469,7 @@ export default function PageBuilderPage() {
             disabled={saving}
             className="w-full px-4 py-2 bg-accent-orange text-white rounded-lg hover:bg-accent-orange/90 disabled:opacity-50 mb-4"
           >
-            {saving ? "Saving..." : "Save Changes"}
+            {saving ? "Saving..." : hasUnsavedChanges ? "Save Changes *" : "Save Changes"}
           </button>
 
           {/* Delete Page Button - Only show for non-homepage pages */}
@@ -737,6 +724,11 @@ function SectionSettingsPanel({
 
   const content = section.content ? JSON.parse(section.content) : {}
 
+  const normalizeHexColor = (value: any, fallback: string) => {
+    const v = typeof value === "string" ? value.trim() : ""
+    return /^#[0-9a-fA-F]{6}$/.test(v) ? v : fallback
+  }
+
   const updateSettings = (key: string, value: any) => {
     const newSettings = { ...settings, [key]: value }
     onUpdate({ settings: JSON.stringify(newSettings) })
@@ -841,7 +833,7 @@ function SectionSettingsPanel({
               <div className="flex gap-2">
                 <input
                   type="color"
-                  value={settings.backgroundColor || "#ffffff"}
+                  value={normalizeHexColor(settings.backgroundColor, "#ffffff")}
                   onChange={(e) => updateSettings("backgroundColor", e.target.value)}
                   className="w-16 h-10 border border-gray-300 rounded"
                 />
@@ -862,7 +854,7 @@ function SectionSettingsPanel({
               <div className="flex gap-2">
                 <input
                   type="color"
-                  value={settings.textColor || "#000000"}
+                  value={normalizeHexColor(settings.textColor, "#000000")}
                   onChange={(e) => updateSettings("textColor", e.target.value)}
                   className="w-16 h-10 border border-gray-300 rounded"
                 />

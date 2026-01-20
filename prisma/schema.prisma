@@ -1,0 +1,203 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  password      String
+  role          String    @default("user") // admin, user
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  pages         Page[]    @relation("PageAuthor")
+  posts         Post[]    @relation("PostAuthor")
+  media         Media[]   @relation("MediaUploader")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// WordPress-like Content Management Models
+model Page {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  content     String   @default("") // Rich text content (JSON or HTML)
+  excerpt     String?  // Short description
+  status      String   @default("draft") // draft, published
+  settings    String?  @default("{}") // JSON string for page-specific settings (typography, etc.)
+  authorId    String
+  author      User     @relation("PageAuthor", fields: [authorId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  publishedAt DateTime?
+
+  @@index([slug])
+  @@index([status])
+}
+
+model Post {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  content     String   @default("") // Rich text content (JSON or HTML)
+  excerpt     String?  // Short description
+  status      String   @default("draft") // draft, published
+  authorId    String
+  author      User     @relation("PostAuthor", fields: [authorId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  publishedAt DateTime?
+
+  @@index([slug])
+  @@index([status])
+}
+
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String   // JSON string for complex values
+  type      String   @default("string") // string, number, boolean, json
+  category  String?  // general, appearance, shop, etc.
+  updatedAt DateTime @updatedAt
+
+  @@index([key])
+  @@index([category])
+}
+
+model Media {
+  id          String   @id @default(cuid())
+  filename    String
+  originalName String
+  mimeType    String
+  size        Int      // File size in bytes
+  url         String   // Path/URL to the file
+  alt         String?  // Alt text for images
+  uploadedById String
+  uploadedBy  User     @relation("MediaUploader", fields: [uploadedById], references: [id])
+  createdAt   DateTime @default(now())
+
+  @@index([uploadedById])
+}
+
+// Menu Management Models
+model Menu {
+  id        String     @id @default(cuid())
+  name      String     // Menu name (e.g., "Main Menu", "Footer Menu")
+  location  String?    // Menu location (header, footer, etc.)
+  items     MenuItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([location])
+}
+
+model MenuItem {
+  id        String     @id @default(cuid())
+  menuId    String
+  menu      Menu       @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  label     String     // Display text
+  url       String     // Link URL (can be relative or absolute)
+  order     Int        @default(0) // Display order
+  parentId  String?    // For nested/dropdown menus
+  parent    MenuItem?  @relation("MenuItemHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children  MenuItem[] @relation("MenuItemHierarchy")
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([menuId])
+  @@index([parentId])
+  @@index([order])
+}
+
+// Footer Widget Models
+model FooterWidget {
+  id          String   @id @default(cuid())
+  columnIndex Int      // Which column (0, 1, 2, 3, 4)
+  title       String?  // Column heading/title
+  type        String   @default("links") // "text", "links", "menu"
+  content     String?  // JSON string for structured content (links array, text, etc.)
+  order       Int      @default(0) // Display order within column
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([columnIndex])
+  @@index([order])
+}
+
+// Sidebar Widget Models
+model SidebarWidget {
+  id        String   @id @default(cuid())
+  title     String?  // Widget title/heading
+  type      String   @default("links") // "text", "links", "menu"
+  content   String?  // JSON string for structured content (links array, text, etc.)
+  order     Int      @default(0) // Display order
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([order])
+}
+
+// Page Builder Sections
+model PageSection {
+  id          String   @id @default(cuid())
+  pageId      String?  // null for homepage, or specific page ID
+  type        String   // "hero", "products", "about", "text", "image", "custom"
+  order       Int      @default(0) // Display order
+  settings    String?  // JSON string for section-specific settings (padding, spacing, colors, etc.)
+  content     String?  // JSON string for section content (text, images, etc.)
+  visible     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([pageId])
+  @@index([order])
+  @@index([type])
+}

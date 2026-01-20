@@ -1,26 +1,93 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Retro 70s Australian Surf Palette - inspired by logo */
+  --background: #faf8f3; /* Cream/off-white canvas texture */
+  --foreground: #8b4513; /* Dark brown */
+  --accent-orange: #ff6b35; /* Burnt orange */
+  --accent-yellow: #ffb347; /* Golden yellow */
+  --accent-brown: #a0522d; /* Sienna brown */
+  --accent-dark: #5d4037; /* Dark brown */
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-accent-orange: var(--accent-orange);
+  --color-accent-yellow: var(--accent-yellow);
+  --color-accent-brown: var(--accent-brown);
+  --color-accent-dark: var(--accent-dark);
+  --color-link: var(--accent-orange);
+  --color-button-primary: var(--accent-orange);
+  --color-button-secondary: var(--accent-dark);
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-bebas);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Link colors */
+a {
+  color: var(--color-link, var(--accent-orange));
+}
+
+a:hover {
+  color: var(--color-link, var(--accent-orange));
+  opacity: 0.8;
+}
+
+/* Button colors */
+button.bg-accent-orange,
+.btn-primary {
+  background-color: var(--color-button-primary, var(--accent-orange)) !important;
+}
+
+button.border-accent-dark,
+.btn-secondary {
+  border-color: var(--color-button-secondary, var(--accent-dark)) !important;
+  color: var(--color-button-secondary, var(--accent-dark)) !important;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--typography-body-font, var(--font-inter)), Arial, Helvetica, sans-serif;
+  font-size: var(--typography-base-size, 16px);
+  font-weight: var(--typography-base-weight, 400);
+  line-height: var(--typography-line-height, 1.5);
+  letter-spacing: var(--typography-letter-spacing, 0px);
+}
+
+h1, h2, h3, h4, h5, h6,
+.font-display {
+  font-family: var(--typography-display-font, var(--font-bebas)), cursive, sans-serif;
+  font-weight: var(--typography-heading-weight, 700);
+}
+
+/* Footer grid responsive columns - using CSS custom properties for dynamic columns */
+.footer-grid-2 {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+@media (min-width: 768px) {
+  .footer-grid-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .footer-grid-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .footer-grid-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .footer-grid-5 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+/* Hide scrollbar for thumbnail gallery */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
 }

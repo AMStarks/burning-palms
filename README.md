@@ -1,36 +1,110 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Burning Palms
+
+Australian surf & street wear brand with a retro 70s vibe.
 
 ## Getting Started
 
-First, run the development server:
+### Development
+
+Run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser to see the site.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Build for production:
 
-## Learn More
+```bash
+npm run build
+```
 
-To learn more about Next.js, take a look at the following resources:
+Start the production server:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm start
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Tech Stack
 
-## Deploy on Vercel
+- **Next.js 16** - React framework
+- **TypeScript** - Type safety
+- **Tailwind CSS v4** - Styling
+- **Google Fonts** - Inter & Bebas Neue (retro display font)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Design System
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Colors (Retro 70s Australian Surf Palette)
+- **Background**: Cream/off-white (#faf8f3)
+- **Foreground**: Dark brown (#8b4513)
+- **Accent Orange**: Burnt orange (#ff6b35)
+- **Accent Yellow**: Golden yellow (#ffb347)
+- **Accent Brown**: Sienna brown (#a0522d)
+- **Accent Dark**: Dark brown (#5d4037)
+
+### Typography
+- **Display**: Bebas Neue (retro bold)
+- **Body**: Inter (clean, readable)
+
+## Project Structure
+
+```
+app/
+  layout.tsx      # Root layout with metadata
+  page.tsx        # Homepage
+  globals.css     # Global styles and Tailwind config
+public/           # Static assets (logo, images)
+```
+
+## Admin System
+
+### Admin Login
+
+The admin dashboard is available at `/admin/login`.
+
+**Default Admin Credentials:**
+- Email: `andrewmartinstarkey@gmail.com`
+- Password: `15124353asS$`
+
+### Admin Features
+
+- **Dashboard**: Overview of content and statistics
+- **Pages**: Create, edit, and manage website pages
+- **Posts**: Blog post management (coming soon)
+- **Settings**: Manage website settings (site title, description, etc.)
+- **Media**: Media library for images and files (coming soon)
+
+### Database
+
+The project uses SQLite with Prisma ORM. The database file is located at `prisma/dev.db`.
+
+To seed the database with the admin user:
+```bash
+npm run db:seed
+```
+
+To run migrations:
+```bash
+npx prisma migrate dev
+```
+
+## Next Steps
+
+1. ✅ Logo added to public/ directory
+2. ✅ Admin CMS system implemented
+3. Set up Shopify integration
+4. Create product pages
+5. Add shopping cart functionality
+6. Configure POD supplier integration
+7. Enhance content editor with rich text capabilities
+8. Add media upload functionality
+
+## References
+
+Design inspiration from:
+- White Fox Boutique (modern e-commerce structure)
+- Ghanda (surf culture aesthetic)
+- Rip Curl (professional surf brand layout)

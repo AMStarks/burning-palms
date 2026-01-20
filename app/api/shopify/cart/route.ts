@@ -23,7 +23,7 @@ export async function POST(request: Request) {
 
     const client = createStorefrontApiClient({
       storeDomain,
-      apiVersion: "2024-01",
+      apiVersion: "2026-01",
       publicAccessToken: accessToken,
     })
 

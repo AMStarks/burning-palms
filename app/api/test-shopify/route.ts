@@ -29,7 +29,7 @@ export async function GET() {
     // The publicAccessToken parameter accepts both public and private tokens
     const testClient = createStorefrontApiClient({
       storeDomain: storeDomain,
-      apiVersion: '2024-01',
+      apiVersion: '2026-01',
       publicAccessToken: accessToken,
     })
     

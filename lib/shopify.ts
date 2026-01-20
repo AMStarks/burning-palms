@@ -15,7 +15,7 @@ if (!storeDomain || !accessToken) {
 // This token should come from: Sales Channels → Headless → Your Storefront → Settings
 const client = storeDomain && accessToken ? createStorefrontApiClient({
   storeDomain: storeDomain,
-  apiVersion: '2024-01',
+  apiVersion: '2026-01',
   publicAccessToken: accessToken, // Storefront API token (usually alphanumeric, not shpat_...)
 }) : null
 

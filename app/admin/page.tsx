@@ -1,6 +1,7 @@
 import { getServerSession } from "@/lib/get-session"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
+import { PublishToggleButton } from "./components/PublishToggleButton"
 
 export const dynamic = 'force-dynamic'
 
@@ -147,12 +148,7 @@ export default async function AdminDashboard() {
                       {new Date(page.updatedAt).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <Link 
-                        href={`/admin/pages/${page.id}`}
-                        className="text-accent-orange hover:text-accent-orange/80"
-                      >
-                        Edit
-                      </Link>
+                      <PublishToggleButton pageId={page.id} currentStatus={page.status} />
                     </td>
                   </tr>
                 ))

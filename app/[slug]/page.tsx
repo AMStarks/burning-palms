@@ -32,6 +32,11 @@ export default async function CmsPage({ params }: { params: Promise<{ slug: stri
     notFound()
   }
 
+  // Draft pages are not "online". They should 404 publicly until published.
+  if (page.status !== "published") {
+    notFound()
+  }
+
   const siteSettings = await getSiteSettings()
   const layoutSettings = await getLayoutSettings()
   const headerFooterSettings = await getHeaderFooterSettings()
@@ -90,16 +95,6 @@ export default async function CmsPage({ params }: { params: Promise<{ slug: stri
 
       {/* Page content */}
       <main className="relative">
-        {page.status !== "published" ? (
-          <div className="bg-yellow-50 border-b border-yellow-200">
-            <div className={`${containerClass} mx-auto px-4 sm:px-6 lg:px-8 py-3`}>
-              <div className="text-sm text-yellow-800">
-                This page is currently a <strong>draft</strong>. Publish it in <Link className="underline" href="/admin/pages">Admin → Pages</Link>.
-              </div>
-            </div>
-          </div>
-        ) : null}
-
         {pageSections.length > 0 ? (
           pageSections.map((section) => <SectionRenderer key={section.id} section={section} />)
         ) : (

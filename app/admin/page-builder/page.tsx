@@ -38,6 +38,7 @@ const SECTION_TYPES = [
   { value: "about", label: "About/Text", icon: "📝" },
   { value: "image", label: "Image Section", icon: "🖼️" },
   { value: "text", label: "Text Block", icon: "📄" },
+  { value: "contact", label: "Contact Form", icon: "✉️" },
 ]
 
 type Page = {
@@ -181,6 +182,13 @@ export default function PageBuilderPage() {
           ? { heading: "", text: "" }
           : type === "text"
             ? { text: "" }
+            : type === "contact"
+              ? {
+                  heading: "CONTACT",
+                  intro: "Send us a message and we’ll get back to you as soon as possible.",
+                  inquiryOptions: ["Order", "Other"],
+                  successMessage: "Thanks — we’ve received your message and will get back to you shortly.",
+                }
             : {}
 
       const res = await fetch("/api/admin/page-sections", {
@@ -1173,6 +1181,76 @@ function SectionSettingsPanel({
                   <option value="center">Center - Default</option>
                   <option value="right">Right</option>
                 </select>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {section.type === "contact" ? (
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Contact Form</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Heading
+                </label>
+                <input
+                  type="text"
+                  value={content.heading || ""}
+                  onChange={(e) => updateContent("heading", e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  placeholder="CONTACT"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Intro text
+                </label>
+                <textarea
+                  value={content.intro || ""}
+                  onChange={(e) => updateContent("intro", e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  placeholder="Send us a message..."
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Inquiry options (comma-separated)
+                </label>
+                <input
+                  type="text"
+                  value={
+                    Array.isArray(content.inquiryOptions)
+                      ? content.inquiryOptions.join(", ")
+                      : (content.inquiryOptions || "")
+                  }
+                  onChange={(e) =>
+                    updateContent(
+                      "inquiryOptions",
+                      e.target.value
+                        .split(",")
+                        .map((s) => s.trim())
+                        .filter(Boolean)
+                    )
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  placeholder="Order, Other"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Success message
+                </label>
+                <textarea
+                  value={content.successMessage || ""}
+                  onChange={(e) => updateContent("successMessage", e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div className="text-xs text-gray-500">
+                Captcha uses Cloudflare Turnstile. Requires `NEXT_PUBLIC_TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` env vars.
               </div>
             </div>
           </div>

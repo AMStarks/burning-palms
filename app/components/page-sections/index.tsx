@@ -3,6 +3,7 @@ import { ProductsSection } from "./ProductsSection"
 import { AboutSection } from "./AboutSection"
 import { ImageSection } from "./ImageSection"
 import { TextSection } from "./TextSection"
+import { ContactFormSection } from "./ContactFormSection"
 
 type PageSection = {
   id: string
@@ -33,6 +34,8 @@ export async function SectionRenderer({ section }: SectionRendererProps) {
       return <TextSection settings={settings} content={content} />
     case "image":
       return <ImageSection settings={settings} content={content} />
+    case "contact":
+      return <ContactFormSection settings={settings} content={content} />
     default:
       return null
   }

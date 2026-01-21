@@ -296,6 +296,73 @@ export function PagePreview({ sections, selectedSectionId, onSectionClick }: Pag
     )
   }
 
+  const ContactFormSectionPreview = ({ settings, content }: { settings: any; content: any }) => {
+    const paddingMap: Record<string, string> = {
+      none: "py-0",
+      small: "py-4",
+      normal: "py-16",
+      large: "py-24",
+      xlarge: "py-32",
+    }
+    const paddingClass = paddingMap[settings?.padding || "normal"] || paddingMap.normal
+
+    const spacingMap: Record<string, string> = {
+      none: "mb-0",
+      small: "mb-6",
+      normal: "mb-12",
+      large: "mb-20",
+      xlarge: "mb-32",
+    }
+    const spacingClass = spacingMap[settings?.spacing || "normal"] || spacingMap.normal
+
+    const maxWidthMap: Record<string, string> = {
+      sm: "max-w-sm",
+      md: "max-w-md",
+      lg: "max-w-lg",
+      xl: "max-w-xl",
+      "2xl": "max-w-2xl",
+      full: "max-w-7xl",
+    }
+    const maxWidthClass = maxWidthMap[settings?.maxWidth || "lg"] || maxWidthMap.lg
+
+    const backgroundColor = settings?.backgroundColor || "transparent"
+    const textColor = settings?.textColor || "inherit"
+
+    const heading = content?.heading || "CONTACT"
+    const intro = content?.intro || ""
+
+    return (
+      <section
+        className={`${paddingClass} px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-accent-yellow/5 to-accent-orange/5 ${spacingClass}`}
+        style={{
+          backgroundColor: backgroundColor !== "transparent" ? backgroundColor : undefined,
+          color: textColor !== "inherit" ? textColor : undefined,
+        }}
+      >
+        <div className={`${maxWidthClass} mx-auto`}>
+          <h2 className="font-display text-4xl md:text-5xl text-accent-dark mb-4 text-center">
+            {heading}
+          </h2>
+          {intro ? (
+            <p className="text-foreground/80 text-lg leading-relaxed mb-8 text-center">{intro}</p>
+          ) : null}
+          <div className="bg-white rounded-lg shadow p-6 space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="h-10 rounded border border-gray-300 bg-gray-50" />
+              <div className="h-10 rounded border border-gray-300 bg-gray-50" />
+            </div>
+            <div className="h-10 rounded border border-gray-300 bg-gray-50" />
+            <div className="h-28 rounded border border-gray-300 bg-gray-50" />
+            <div className="h-14 rounded border border-gray-300 bg-gray-50 flex items-center justify-center text-xs text-gray-500">
+              Captcha (Turnstile)
+            </div>
+            <div className="h-12 rounded-full bg-accent-orange/90" />
+          </div>
+        </div>
+      </section>
+    )
+  }
+
   // Client-side version of ImageSection - matches server component exactly
   const ImageSectionPreview = ({ settings, content }: { settings: any; content: any }) => {
     const paddingMap: Record<string, string> = {
@@ -445,6 +512,18 @@ export function PagePreview({ sections, selectedSectionId, onSectionClick }: Pag
         return (
           <div {...wrapperProps}>
             <ImageSectionPreview settings={settings} content={content} />
+            {isSelected && (
+              <div className="absolute top-2 left-2 bg-accent-orange text-white px-2 py-1 rounded text-xs font-bold z-50 pointer-events-none">
+                SELECTED
+              </div>
+            )}
+          </div>
+        )
+
+      case "contact":
+        return (
+          <div {...wrapperProps}>
+            <ContactFormSectionPreview settings={settings} content={content} />
             {isSelected && (
               <div className="absolute top-2 left-2 bg-accent-orange text-white px-2 py-1 rounded text-xs font-bold z-50 pointer-events-none">
                 SELECTED

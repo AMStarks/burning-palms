@@ -50,10 +50,16 @@ export async function getSiteSettings() {
     "share_description",
     "share_image_url",
   ])
+
+  // Important: Allow blank strings when the setting exists (e.g. user clears Site Title)
+  const hasKey = (k: string) => Object.prototype.hasOwnProperty.call(settings, k)
+
   return {
-    title: settings.site_title || "Burning Palms",
-    description: settings.site_description || "Retro 70s inspired Australian surf and street wear. Authentic style from down under.",
-    tagline: settings.site_tagline || "Retro 70s Australian Surf & Street Wear",
+    title: hasKey("site_title") ? settings.site_title : "Burning Palms",
+    description: hasKey("site_description")
+      ? settings.site_description
+      : "Retro 70s inspired Australian surf and street wear. Authentic style from down under.",
+    tagline: hasKey("site_tagline") ? settings.site_tagline : "Retro 70s Australian Surf & Street Wear",
     logoUrl: settings.logo_url || "/logo.png",
     faviconUrl: settings.favicon_url || "/icon",
     shareTitle: settings.share_title || "",

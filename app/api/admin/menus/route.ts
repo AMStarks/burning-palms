@@ -4,6 +4,28 @@ import { prisma } from "@/lib/prisma"
 // GET - Fetch all menus with their items
 export async function GET(request: NextRequest) {
   try {
+    // If no header menu exists, create a sensible default so the UI shows "existing" items.
+    const existingHeader = await prisma.menu.findFirst({
+      where: { location: "header" },
+    })
+
+    if (!existingHeader) {
+      await prisma.menu.create({
+        data: {
+          name: "Header Menu",
+          location: "header",
+          items: {
+            create: [
+              { label: "Shop", url: "#", order: 0 },
+              { label: "Collections", url: "#", order: 1 },
+              { label: "About", url: "#", order: 2 },
+              { label: "Contact", url: "#", order: 3 },
+            ],
+          },
+        },
+      })
+    }
+
     const menus = await prisma.menu.findMany({
       include: {
         items: {

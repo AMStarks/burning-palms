@@ -53,9 +53,11 @@ export default async function Home() {
                     className="object-contain h-full w-auto"
                   />
                 </div>
-                <div className="font-display text-2xl text-accent-dark">
-                  {siteSettings.title.toUpperCase()}
-                </div>
+                {siteSettings.title?.trim() ? (
+                  <div className="font-display text-2xl text-accent-dark">
+                    {siteSettings.title.toUpperCase()}
+                  </div>
+                ) : null}
               </Link>
               <div className="flex items-center space-x-8">
                 {headerMenu && headerMenu.items.length > 0 ? (
@@ -89,9 +91,11 @@ export default async function Home() {
                     className="object-contain h-full w-auto"
                   />
                 </div>
-                <div className="font-display text-2xl text-accent-dark">
-                  {siteSettings.title.toUpperCase()}
-                </div>
+                {siteSettings.title?.trim() ? (
+                  <div className="font-display text-2xl text-accent-dark">
+                    {siteSettings.title.toUpperCase()}
+                  </div>
+                ) : null}
               </Link>
               <div className="flex items-center space-x-8">
                 {headerMenu && headerMenu.items.length > 0 ? (
@@ -125,9 +129,11 @@ export default async function Home() {
                     className="object-contain h-full w-auto"
                   />
                 </div>
-                <div className="font-display text-2xl text-accent-dark">
-                  {siteSettings.title.toUpperCase()}
-                </div>
+                {siteSettings.title?.trim() ? (
+                  <div className="font-display text-2xl text-accent-dark">
+                    {siteSettings.title.toUpperCase()}
+                  </div>
+                ) : null}
               </Link>
               {headerMenu && headerMenu.items.length > 0 ? (
                 <div className="hidden md:flex space-x-8">

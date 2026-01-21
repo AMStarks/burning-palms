@@ -19,6 +19,11 @@ const defaultSettings: Setting[] = [
     { key: "site_title", value: "Burning Palms", category: "general", type: "string" },
     { key: "site_description", value: "Retro 70s inspired Australian surf and street wear. Authentic style from down under.", category: "general", type: "string" },
     { key: "site_tagline", value: "Retro 70s Australian Surf & Street Wear", category: "general", type: "string" },
+
+    // SEO / Sharing (link previews in SMS/social)
+    { key: "share_title", value: "", category: "seo", type: "string" },
+    { key: "share_description", value: "", category: "seo", type: "string" },
+    { key: "share_image_url", value: "", category: "seo", type: "image" },
     
     // Colors - Core Palette
     { key: "color_background", value: "#faf8f3", category: "appearance", type: "color" },
@@ -287,6 +292,91 @@ export default function SettingsPage() {
                   />
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* SEO / Sharing Settings */}
+        {groupedSettings.seo && (
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="font-display text-2xl text-accent-dark mb-2">
+              SEO & Sharing
+            </h2>
+            <p className="text-sm text-gray-600 mb-4">
+              Controls the title/description/image shown when your link is shared via SMS and social platforms.
+            </p>
+            <div className="space-y-4">
+              {groupedSettings.seo
+                .filter((s) => s.type !== "image")
+                .map((setting) => (
+                  <div key={setting.key}>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {setting.key
+                        .replace("share_", "")
+                        .split("_")
+                        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                        .join(" ")}
+                    </label>
+                    <input
+                      type="text"
+                      value={getSetting(setting.key)}
+                      onChange={(e) => handleChange(setting.key, e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-orange focus:border-transparent"
+                      placeholder={setting.key === "share_title" ? "Burning Palms" : "Retro 70s Australian surf & street wear."}
+                    />
+                  </div>
+                ))}
+
+              {groupedSettings.seo
+                .filter((s) => s.type === "image")
+                .map((setting) => {
+                  const imageUrl = getSetting(setting.key)
+                  return (
+                    <div key={setting.key}>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Share Image (Open Graph)
+                      </label>
+                      <div className="space-y-2">
+                        {imageUrl && (
+                          <div className="relative w-full max-w-md aspect-[1.91/1] border border-gray-300 rounded-lg overflow-hidden bg-gray-50">
+                            <Image
+                              src={imageUrl}
+                              alt="Share preview"
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        )}
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={imageUrl}
+                            onChange={(e) => handleChange(setting.key, e.target.value)}
+                            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-orange focus:border-transparent"
+                            placeholder="Leave blank to use the default generated preview image"
+                          />
+                          <label className="px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-200">
+                            Upload
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0]
+                                if (file) {
+                                  handleImageUpload(setting.key, file)
+                                }
+                              }}
+                            />
+                          </label>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          Recommended: 1200×630 PNG/JPG for best previews.
+                        </p>
+                      </div>
+                    </div>
+                  )
+                })}
             </div>
           </div>
         )}

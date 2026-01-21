@@ -46,6 +46,9 @@ export async function getSiteSettings() {
     "site_tagline",
     "logo_url",
     "favicon_url",
+    "share_title",
+    "share_description",
+    "share_image_url",
   ])
   return {
     title: settings.site_title || "Burning Palms",
@@ -53,5 +56,8 @@ export async function getSiteSettings() {
     tagline: settings.site_tagline || "Retro 70s Australian Surf & Street Wear",
     logoUrl: settings.logo_url || "/logo.png",
     faviconUrl: settings.favicon_url || "/icon",
+    shareTitle: settings.share_title || "",
+    shareDescription: settings.share_description || "",
+    shareImageUrl: settings.share_image_url || "",
   }
 }

@@ -22,13 +22,16 @@ export async function generateMetadata(): Promise<Metadata> {
   const siteSettings = await getSiteSettings();
   const baseUrl = process.env.NEXTAUTH_URL || "https://burningpalms.au"
   const favicon = siteSettings.faviconUrl || "/icon"
+  const shareTitle = siteSettings.shareTitle || siteSettings.title
+  const shareDescription = siteSettings.shareDescription || siteSettings.description || siteSettings.tagline
+  const shareImage = siteSettings.shareImageUrl || "/opengraph-image"
   return {
     metadataBase: new URL(baseUrl),
     title: {
       default: siteSettings.title,
       template: `%s | ${siteSettings.title}`,
     },
-    description: siteSettings.description || siteSettings.tagline,
+    description: shareDescription,
     icons: {
       icon: [{ url: favicon }],
       shortcut: [{ url: favicon }],
@@ -36,12 +39,12 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       type: "website",
       url: baseUrl,
-      title: siteSettings.title,
-      description: siteSettings.description || siteSettings.tagline,
+      title: shareTitle,
+      description: shareDescription,
       siteName: siteSettings.title,
       images: [
         {
-          url: "/opengraph-image",
+          url: shareImage,
           width: 1200,
           height: 630,
           alt: `${siteSettings.title} preview`,
@@ -50,9 +53,9 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: siteSettings.title,
-      description: siteSettings.description || siteSettings.tagline,
-      images: ["/opengraph-image"],
+      title: shareTitle,
+      description: shareDescription,
+      images: [shareImage],
     },
   };
 }

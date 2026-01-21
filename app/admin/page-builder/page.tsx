@@ -466,7 +466,8 @@ export default function PageBuilderPage() {
             </label>
             {(() => {
               const page = selectedPageId ? pages.find((p) => p.id === selectedPageId) : null
-              const path = page?.slug ? `/${page.slug.replace(/^\\/+/, "")}` : "/"
+              const slug = page?.slug ? page.slug.replace(/^\/+/, "") : ""
+              const path = slug ? `/${slug}` : "/"
               return (
                 <div className="space-y-2">
                   <div className="flex gap-2">

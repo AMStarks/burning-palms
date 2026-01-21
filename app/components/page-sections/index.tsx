@@ -2,6 +2,7 @@ import { HeroSection } from "./HeroSection"
 import { ProductsSection } from "./ProductsSection"
 import { AboutSection } from "./AboutSection"
 import { ImageSection } from "./ImageSection"
+import { TextSection } from "./TextSection"
 
 type PageSection = {
   id: string
@@ -27,8 +28,9 @@ export async function SectionRenderer({ section }: SectionRendererProps) {
     case "products":
       return <ProductsSection settings={settings} content={content} />
     case "about":
-    case "text":
       return <AboutSection settings={settings} content={content} />
+    case "text":
+      return <TextSection settings={settings} content={content} />
     case "image":
       return <ImageSection settings={settings} content={content} />
     default:

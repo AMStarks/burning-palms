@@ -238,6 +238,64 @@ export function PagePreview({ sections, selectedSectionId, onSectionClick }: Pag
     )
   }
 
+  // Client-side version of TextSection - no heading
+  const TextSectionPreview = ({ settings, content }: { settings: any; content: any }) => {
+    const paddingMap: Record<string, string> = {
+      none: "py-0",
+      small: "py-4",
+      normal: "py-16",
+      large: "py-24",
+      xlarge: "py-32",
+    }
+    const paddingClass = paddingMap[settings?.padding || "normal"] || paddingMap.normal
+
+    const spacingMap: Record<string, string> = {
+      none: "mb-0",
+      small: "mb-6",
+      normal: "mb-12",
+      large: "mb-20",
+      xlarge: "mb-32",
+    }
+    const spacingClass = spacingMap[settings?.spacing || "normal"] || spacingMap.normal
+
+    const maxWidthMap: Record<string, string> = {
+      sm: "max-w-sm",
+      md: "max-w-md",
+      lg: "max-w-lg",
+      xl: "max-w-xl",
+      "2xl": "max-w-2xl",
+      full: "max-w-7xl",
+    }
+    const maxWidthClass = maxWidthMap[settings?.maxWidth || "full"] || maxWidthMap.full
+
+    const textAlignMap: Record<string, string> = {
+      left: "text-left",
+      center: "text-center",
+      right: "text-right",
+    }
+    const textAlignClass = textAlignMap[settings?.textAlign || "left"] || textAlignMap.left
+
+    const backgroundColor = settings?.backgroundColor || "transparent"
+    const textColor = settings?.textColor || "inherit"
+    const text = content?.text || ""
+
+    return (
+      <section
+        className={`${paddingClass} px-4 sm:px-6 lg:px-8 ${spacingClass}`}
+        style={{
+          backgroundColor: backgroundColor !== "transparent" ? backgroundColor : undefined,
+          color: textColor !== "inherit" ? textColor : undefined,
+        }}
+      >
+        <div className={`${maxWidthClass} mx-auto ${textAlignClass}`}>
+          <div className="text-lg text-foreground/80 leading-relaxed whitespace-pre-line">
+            {text}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
   // Client-side version of ImageSection - matches server component exactly
   const ImageSectionPreview = ({ settings, content }: { settings: any; content: any }) => {
     const paddingMap: Record<string, string> = {
@@ -360,10 +418,21 @@ export function PagePreview({ sections, selectedSectionId, onSectionClick }: Pag
         )
 
       case "about":
-      case "text":
         return (
           <div {...wrapperProps}>
             <AboutSectionPreview settings={settings} content={content} />
+            {isSelected && (
+              <div className="absolute top-2 left-2 bg-accent-orange text-white px-2 py-1 rounded text-xs font-bold z-50 pointer-events-none">
+                SELECTED
+              </div>
+            )}
+          </div>
+        )
+
+      case "text":
+        return (
+          <div {...wrapperProps}>
+            <TextSectionPreview settings={settings} content={content} />
             {isSelected && (
               <div className="absolute top-2 left-2 bg-accent-orange text-white px-2 py-1 rounded text-xs font-bold z-50 pointer-events-none">
                 SELECTED

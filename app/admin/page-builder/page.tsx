@@ -176,6 +176,13 @@ export default function PageBuilderPage() {
 
   const addSection = async (type: string) => {
     try {
+      const defaultContent =
+        type === "about"
+          ? { heading: "", text: "" }
+          : type === "text"
+            ? { text: "" }
+            : {}
+
       const res = await fetch("/api/admin/page-sections", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -183,7 +190,7 @@ export default function PageBuilderPage() {
           pageId: selectedPageId || null,
           type,
           settings: JSON.stringify({ padding: "normal", spacing: "normal" }),
-          content: JSON.stringify({}),
+          content: JSON.stringify(defaultContent),
         }),
       })
 
@@ -451,6 +458,54 @@ export default function PageBuilderPage() {
               )}
             </div>
           )}
+
+          {/* Public URL helper (copy/paste into Menus) */}
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Page URL (for menus)
+            </label>
+            {(() => {
+              const page = selectedPageId ? pages.find((p) => p.id === selectedPageId) : null
+              const path = page?.slug ? `/${page.slug.replace(/^\\/+/, "")}` : "/"
+              return (
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={path}
+                      readOnly
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50"
+                    />
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(path)
+                          setMessage("Copied page path!")
+                          setTimeout(() => setMessage(""), 2000)
+                        } catch {
+                          setMessage("Failed to copy (browser blocked clipboard)")
+                          setTimeout(() => setMessage(""), 3000)
+                        }
+                      }}
+                      className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm"
+                      title="Copy path"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                  <a
+                    href={path}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-sm text-accent-orange hover:text-accent-orange/80 underline"
+                  >
+                    Open page in new tab
+                  </a>
+                </div>
+              )
+            })()}
+          </div>
         </div>
 
         {message && (
@@ -1080,17 +1135,19 @@ function SectionSettingsPanel({
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Text Content</h3>
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Heading
-                </label>
-                <input
-                  type="text"
-                  value={content.heading || ""}
-                  onChange={(e) => updateContent("heading", e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                />
-              </div>
+              {section.type === "about" ? (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Heading
+                  </label>
+                  <input
+                    type="text"
+                    value={content.heading || ""}
+                    onChange={(e) => updateContent("heading", e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  />
+                </div>
+              ) : null}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Content

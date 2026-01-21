@@ -20,9 +20,39 @@ const bebasNeue = Bebas_Neue({
 
 export async function generateMetadata(): Promise<Metadata> {
   const siteSettings = await getSiteSettings();
+  const baseUrl = process.env.NEXTAUTH_URL || "https://burningpalms.au"
   return {
-    title: `${siteSettings.title} | ${siteSettings.tagline}`,
-    description: siteSettings.description,
+    metadataBase: new URL(baseUrl),
+    title: {
+      default: siteSettings.title,
+      template: `%s | ${siteSettings.title}`,
+    },
+    description: siteSettings.description || siteSettings.tagline,
+    icons: {
+      icon: [{ url: "/icon", type: "image/png" }],
+      shortcut: ["/favicon.ico"],
+    },
+    openGraph: {
+      type: "website",
+      url: baseUrl,
+      title: siteSettings.title,
+      description: siteSettings.description || siteSettings.tagline,
+      siteName: siteSettings.title,
+      images: [
+        {
+          url: "/opengraph-image",
+          width: 1200,
+          height: 630,
+          alt: `${siteSettings.title} preview`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: siteSettings.title,
+      description: siteSettings.description || siteSettings.tagline,
+      images: ["/opengraph-image"],
+    },
   };
 }
 

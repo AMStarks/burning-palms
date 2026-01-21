@@ -19,6 +19,30 @@ export async function POST(request: Request) {
     const objectPath = `uploads/${filename}`
 
     const supabase = getSupabaseAdminClient()
+    // Ensure bucket exists (common cause of 500s)
+    const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets()
+    if (bucketsError) {
+      console.error("Supabase listBuckets error:", bucketsError)
+      return NextResponse.json({ error: "Storage not available" }, { status: 500 })
+    }
+
+    const hasBucket = Array.isArray(buckets) && buckets.some((b) => b.name === bucket)
+    if (!hasBucket) {
+      const { error: createBucketError } = await supabase.storage.createBucket(bucket, {
+        public: true,
+      })
+      if (createBucketError) {
+        console.error("Supabase createBucket error:", createBucketError)
+        return NextResponse.json(
+          {
+            error: "Failed to create storage bucket",
+            details: createBucketError.message,
+          },
+          { status: 500 }
+        )
+      }
+    }
+
     const { data, error } = await supabase.storage.from(bucket).createSignedUploadUrl(objectPath)
 
     if (error || !data) {

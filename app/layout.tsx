@@ -21,7 +21,9 @@ const bebasNeue = Bebas_Neue({
 export async function generateMetadata(): Promise<Metadata> {
   const siteSettings = await getSiteSettings();
   const baseUrl = process.env.NEXTAUTH_URL || "https://burningpalms.au"
-  const favicon = siteSettings.faviconUrl || "/icon"
+  // Always serve the browser favicon through `/icon` so we can apply consistent sizing/background
+  // regardless of whether the admin uploaded a transparent PNG.
+  const favicon = "/icon"
   const shareTitle = siteSettings.shareTitle || siteSettings.title
   const shareDescription = siteSettings.shareDescription || siteSettings.description || siteSettings.tagline
   const shareImage = siteSettings.shareImageUrl || "/opengraph-image"

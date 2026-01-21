@@ -2,6 +2,13 @@ import { getProductByHandle, getAllProductHandles } from "@/lib/shopify"
 import { AddToCartButton } from "@/app/components/AddToCartButton"
 import { ProductImageGallery } from "@/app/components/ProductImageGallery"
 import { notFound } from "next/navigation"
+import Image from "next/image"
+import Link from "next/link"
+import { getSiteSettings } from "@/lib/settings"
+import { getLayoutSettings, getContainerWidthClass } from "@/lib/layout-settings"
+import { getHeaderFooterSettings, getHeaderClasses } from "@/lib/header-footer-settings"
+import { getMenuByLocation } from "@/lib/menus"
+import { Menu } from "@/app/components/Menu"
 
 // Generate static paths for all products (for better SEO)
 export async function generateStaticParams() {
@@ -31,9 +38,58 @@ export default async function ProductPage({
     notFound()
   }
 
+  const siteSettings = await getSiteSettings()
+  const layoutSettings = await getLayoutSettings()
+  const headerFooterSettings = await getHeaderFooterSettings()
+  const headerMenu = await getMenuByLocation("header")
+  const containerClass = getContainerWidthClass(layoutSettings.containerWidth || "7xl")
+  const headerClasses = getHeaderClasses(headerFooterSettings)
+
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Navigation (match homepage) */}
+      <nav className={headerClasses.nav}>
+        <div className={`${containerClass} mx-auto px-4 sm:px-6 lg:px-8`}>
+          <div className={`${headerClasses.container} ${headerClasses.height}`}>
+            <Link href="/" className="flex items-center space-x-3">
+              <div className="h-[75px] w-auto">
+                <Image
+                  src={siteSettings.logoUrl}
+                  alt="Burning Palms Logo"
+                  width={133}
+                  height={75}
+                  className="object-contain h-full w-auto"
+                />
+              </div>
+              {siteSettings.title?.trim() ? (
+                <div className="font-display text-2xl text-accent-dark">
+                  {siteSettings.title.toUpperCase()}
+                </div>
+              ) : null}
+            </Link>
+
+            {headerMenu && headerMenu.items.length > 0 ? (
+              <div className="hidden md:flex space-x-8">
+                <Menu items={headerMenu.items} itemClassName="text-foreground hover:text-accent-orange transition-colors" />
+              </div>
+            ) : (
+              <div className="hidden md:flex space-x-8">
+                <a href="#" className="text-foreground hover:text-accent-orange transition-colors">Shop</a>
+                <a href="#" className="text-foreground hover:text-accent-orange transition-colors">Collections</a>
+                <a href="#" className="text-foreground hover:text-accent-orange transition-colors">About</a>
+                <a href="#" className="text-foreground hover:text-accent-orange transition-colors">Contact</a>
+              </div>
+            )}
+
+            <div className="flex items-center space-x-4">
+              <button className="text-foreground hover:text-accent-orange">Search</button>
+              <button className="text-foreground hover:text-accent-orange">Cart (0)</button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div className={`${containerClass} mx-auto px-4 sm:px-6 lg:px-8 py-8`}>
         <div className="grid md:grid-cols-2 gap-12">
           {/* Product Images */}
           <ProductImageGallery images={product.images} productTitle={product.title} />
@@ -82,7 +138,7 @@ export async function generateMetadata({
   }
 
   return {
-    title: `${product.title} | Burning Palms`,
+    title: product.title,
     description: product.description
       ? product.description.replace(/<[^>]*>/g, "").substring(0, 160)
       : `Shop ${product.title} at Burning Palms`,

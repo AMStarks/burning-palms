@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { unlink } from "fs/promises"
-import { join } from "path"
+import { getSupabaseAdminClient } from "@/lib/supabase-admin"
 
 export async function DELETE(
   request: NextRequest,
@@ -19,13 +18,24 @@ export async function DELETE(
       return NextResponse.json({ error: "Media not found" }, { status: 404 })
     }
 
-    // Delete file from filesystem
+    // Delete from Supabase Storage if possible
     try {
-      const filepath = join(process.cwd(), "public", media.url)
-      await unlink(filepath)
+      const bucket = process.env.SUPABASE_STORAGE_BUCKET || "uploads"
+      const prefix = "/storage/v1/object/public/"
+      const idx = media.url.indexOf(prefix)
+      if (idx !== -1) {
+        const pathWithBucket = media.url.slice(idx + prefix.length)
+        // pathWithBucket = "<bucket>/<objectPath>"
+        const slashIdx = pathWithBucket.indexOf("/")
+        const objectPath = slashIdx !== -1 ? pathWithBucket.slice(slashIdx + 1) : ""
+        if (objectPath) {
+          const supabase = getSupabaseAdminClient()
+          await supabase.storage.from(bucket).remove([objectPath])
+        }
+      }
     } catch (error) {
-      console.error("Error deleting file:", error)
-      // Continue even if file doesn't exist
+      console.error("Error deleting from Supabase Storage:", error)
+      // Continue even if storage deletion fails
     }
 
     // Delete from database

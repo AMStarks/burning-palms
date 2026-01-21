@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import Image from "next/image"
 import { compressImageFile } from "@/lib/image-compress"
+import { getSupabaseBrowserClient } from "@/lib/supabase-browser"
 
 type MediaFile = {
   id: string
@@ -49,29 +50,45 @@ export default function MediaPage() {
     if (!file) return
 
     setUploading(true)
-    const formData = new FormData()
     const compressed = await compressImageFile(file).catch(() => file)
-    if (compressed.size > 4_000_000) {
-      alert("File is too large. Please upload an image under ~4MB.")
-      setUploading(false)
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ""
-      }
-      return
-    }
-    formData.append("file", compressed)
 
     try {
+      const signedRes = await fetch("/api/admin/media/signed-upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          originalName: compressed.name,
+          mimeType: compressed.type,
+        }),
+      })
+      const signed = await signedRes.json().catch(() => null)
+      if (!signedRes.ok || !signed?.path || !signed?.token || !signed?.publicUrl) {
+        throw new Error(signed?.error || "Failed to prepare upload")
+      }
+
+      const supabase = getSupabaseBrowserClient()
+      const uploadResult = await supabase.storage
+        .from(signed.bucket || "uploads")
+        .uploadToSignedUrl(signed.path, signed.token, compressed)
+
+      if (uploadResult.error) {
+        throw new Error(uploadResult.error.message || "Upload failed")
+      }
+
       const response = await fetch("/api/admin/media", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          url: signed.publicUrl,
+          originalName: compressed.name,
+          mimeType: compressed.type,
+          size: compressed.size,
+          alt: null,
+        }),
       })
 
       if (!response.ok) {
         const err = await response.json().catch(() => ({}))
-        if (response.status === 413) {
-          throw new Error("File too large. Please upload a smaller image.")
-        }
         throw new Error(err?.error || "Upload failed")
       }
 

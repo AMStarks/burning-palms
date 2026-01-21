@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { compressImageFile } from "@/lib/image-compress"
+import { getSupabaseBrowserClient } from "@/lib/supabase-browser"
 import {
   DndContext,
   closestCenter,
@@ -761,40 +762,57 @@ function SectionSettingsPanel({
 
   const uploadHeroBackground = async (file: File) => {
     setUploadingHeroBg(true)
-    const formData = new FormData()
     const compressed = await compressImageFile(file).catch(() => file)
-    if (compressed.size > 4_000_000) {
-      alert("Image is too large. Please choose a smaller image (target under ~4MB).")
-      setUploadingHeroBg(false)
-      if (heroBgFileRef.current) {
-        heroBgFileRef.current.value = ""
-      }
-      return
-    }
-    formData.append("file", compressed)
-    formData.append("alt", "Hero background")
 
     try {
-      const response = await fetch("/api/admin/media", {
+      // 1) Get signed upload URL
+      const signedRes = await fetch("/api/admin/media/signed-upload", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          originalName: compressed.name,
+          mimeType: compressed.type,
+        }),
       })
 
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}))
-        if (response.status === 413) {
-          throw new Error("File too large. Please upload a smaller image.")
-        }
-        throw new Error(err?.error || "Upload failed")
+      const signed = await signedRes.json().catch(() => null)
+      if (!signedRes.ok || !signed?.path || !signed?.token || !signed?.publicUrl) {
+        throw new Error(signed?.error || "Failed to prepare upload")
       }
 
-      const media = await response.json()
-      if (media?.url) {
-        updateContent("backgroundImageUrl", media.url)
+      // 2) Upload directly to Supabase Storage (bypasses Vercel limits)
+      const supabase = getSupabaseBrowserClient()
+      const uploadResult = await supabase.storage
+        .from(signed.bucket || "uploads")
+        .uploadToSignedUrl(signed.path, signed.token, compressed)
+
+      if (uploadResult.error) {
+        throw new Error(uploadResult.error.message || "Upload failed")
+      }
+
+      // 3) Save media record in DB (small JSON request)
+      const recordRes = await fetch("/api/admin/media", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          url: signed.publicUrl,
+          originalName: compressed.name,
+          mimeType: compressed.type,
+          size: compressed.size,
+          alt: "Hero background",
+        }),
+      })
+      const record = await recordRes.json().catch(() => null)
+      if (!recordRes.ok) {
+        throw new Error(record?.error || "Failed to save media record")
+      }
+
+      if (record?.url) {
+        updateContent("backgroundImageUrl", record.url)
       }
     } catch (error) {
       console.error("Error uploading hero background:", error)
-      alert("Failed to upload hero background")
+      alert(`Failed to upload hero background: ${String((error as any)?.message ?? error)}`)
     } finally {
       setUploadingHeroBg(false)
       if (heroBgFileRef.current) {

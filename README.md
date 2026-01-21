@@ -14,6 +14,21 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser to see the site.
 
+## Environment Variables (Vercel)
+
+These variables **do not exist by default** in Vercel — you must create them under:
+**Vercel → Project → Settings → Environment Variables**.
+
+### Contact Form (Captcha + Email)
+
+- **Captcha (Cloudflare Turnstile)**:
+  - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (public site key)
+  - `TURNSTILE_SECRET_KEY` (secret key)
+- **Email delivery (Resend)**:
+  - `RESEND_API_KEY`
+  - `CONTACT_TO_EMAIL` (set this to `info@burningpalms.au`)
+  - `CONTACT_FROM_EMAIL` (optional; must be a verified sender/domain in Resend)
+
 ### Build
 
 Build for production:

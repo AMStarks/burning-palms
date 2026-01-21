@@ -158,7 +158,7 @@ export function ContactForm({
           <Turnstile siteKey={siteKey} onToken={setCaptchaToken} />
         ) : (
           <div className="text-sm text-red-600">
-            Missing `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (captcha not configured).
+            Missing `NEXT_PUBLIC_TURNSTILE_SITE_KEY`. Add it in Vercel → Project → Settings → Environment Variables, then redeploy.
           </div>
         )}
       </div>

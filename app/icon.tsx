@@ -17,8 +17,12 @@ export default async function Icon() {
   // If admin uploaded a favicon image, use it as the source image and render it onto a solid background
   // so transparent areas don't appear black in some browser/tab themes.
   const src = siteSettings.faviconUrl?.trim()
-  const hasExternalSrc = !!src && src !== "/icon" && src !== "/favicon.ico"
-  const imageUrl = hasExternalSrc ? new URL(src!, baseUrl).toString() : ""
+  const defaultFaviconPath = "/uploads/1768120605722-Burning_Palms.png"
+  const resolvedSrc =
+    src && src !== "/icon" && src !== "/favicon.ico"
+      ? src
+      : defaultFaviconPath
+  const imageUrl = resolvedSrc ? new URL(resolvedSrc, baseUrl).toString() : ""
 
   return new ImageResponse(
     (

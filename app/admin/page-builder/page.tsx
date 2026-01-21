@@ -781,7 +781,11 @@ function SectionSettingsPanel({
       })
 
       if (!response.ok) {
-        throw new Error("Upload failed")
+        const err = await response.json().catch(() => ({}))
+        if (response.status === 413) {
+          throw new Error("File too large. Please upload a smaller image.")
+        }
+        throw new Error(err?.error || "Upload failed")
       }
 
       const media = await response.json()

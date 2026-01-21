@@ -11,9 +11,9 @@ export type CompressOptions = {
 export async function compressImageFile(
   file: File,
   {
-    maxWidth = 1920,
-    maxHeight = 1920,
-    maxBytes = 3_500_000,
+    maxWidth = 1600,
+    maxHeight = 1600,
+    maxBytes = 1_800_000,
     initialQuality = 0.82,
     minQuality = 0.5,
   }: CompressOptions = {}

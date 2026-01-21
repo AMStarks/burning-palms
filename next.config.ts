@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
         hostname: 'cdn.shopify.com',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'bxhhoptfmcbpkpntubsn.supabase.co',
+        pathname: '/storage/v1/object/public/**',
+      },
     ],
   },
 };

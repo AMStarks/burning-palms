@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { writeFile } from "fs/promises"
-import { join } from "path"
-import { existsSync, mkdirSync } from "fs"
+import { getSupabaseAdminClient } from "@/lib/supabase-admin"
 
 // Auth temporarily disabled
 const DEFAULT_USER_ID = "admin-user-id" // In production, get from session
@@ -60,15 +58,24 @@ export async function POST(request: NextRequest) {
     const timestamp = Date.now()
     const sanitizedOriginalName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_")
     const filename = `${timestamp}-${sanitizedOriginalName}`
-    const uploadDir = join(process.cwd(), "public", "uploads")
+    const bucket = process.env.SUPABASE_STORAGE_BUCKET || "uploads"
+    const objectPath = `uploads/${filename}`
 
-    // Ensure upload directory exists
-    if (!existsSync(uploadDir)) {
-      mkdirSync(uploadDir, { recursive: true })
+    const supabase = getSupabaseAdminClient()
+    const uploadResult = await supabase.storage
+      .from(bucket)
+      .upload(objectPath, buffer, {
+        contentType: file.type || "application/octet-stream",
+        upsert: false,
+      })
+
+    if (uploadResult.error) {
+      console.error("Supabase upload error:", uploadResult.error)
+      return NextResponse.json({ error: "Upload failed" }, { status: 500 })
     }
 
-    const filepath = join(uploadDir, filename)
-    await writeFile(filepath, buffer)
+    const publicUrlResult = supabase.storage.from(bucket).getPublicUrl(objectPath)
+    const publicUrl = publicUrlResult.data?.publicUrl
 
     // Save to database
     const media = await prisma.media.create({
@@ -77,7 +84,7 @@ export async function POST(request: NextRequest) {
         originalName: file.name,
         mimeType: file.type,
         size: file.size,
-        url: `/uploads/${filename}`,
+        url: publicUrl || "",
         alt: alt || null,
         uploadedById: adminUser.id,
       },

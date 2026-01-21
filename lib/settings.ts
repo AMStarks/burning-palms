@@ -45,11 +45,13 @@ export async function getSiteSettings() {
     "site_description",
     "site_tagline",
     "logo_url",
+    "favicon_url",
   ])
   return {
     title: settings.site_title || "Burning Palms",
     description: settings.site_description || "Retro 70s inspired Australian surf and street wear. Authentic style from down under.",
     tagline: settings.site_tagline || "Retro 70s Australian Surf & Street Wear",
     logoUrl: settings.logo_url || "/logo.png",
+    faviconUrl: settings.favicon_url || "/icon",
   }
 }

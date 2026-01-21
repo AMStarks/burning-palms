@@ -21,6 +21,7 @@ const bebasNeue = Bebas_Neue({
 export async function generateMetadata(): Promise<Metadata> {
   const siteSettings = await getSiteSettings();
   const baseUrl = process.env.NEXTAUTH_URL || "https://burningpalms.au"
+  const favicon = siteSettings.faviconUrl || "/icon"
   return {
     metadataBase: new URL(baseUrl),
     title: {
@@ -29,8 +30,8 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description: siteSettings.description || siteSettings.tagline,
     icons: {
-      icon: [{ url: "/icon", type: "image/png" }],
-      shortcut: ["/favicon.ico"],
+      icon: [{ url: favicon }],
+      shortcut: [{ url: favicon }],
     },
     openGraph: {
       type: "website",

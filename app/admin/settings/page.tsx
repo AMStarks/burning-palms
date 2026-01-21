@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import { COLOR_PRESETS, applyColorPreset } from "@/lib/color-presets"
+import { compressImageFile } from "@/lib/image-compress"
+import { getSupabaseBrowserClient } from "@/lib/supabase-browser"
 
 type Setting = {
   key: string
@@ -177,23 +179,46 @@ export default function SettingsPage() {
   const handleImageUpload = async (key: string, file: File) => {
     setSaving(true)
     try {
-      const formData = new FormData()
-      formData.append("file", file)
+      const compressed = await compressImageFile(file).catch(() => file)
 
-      console.log("Uploading file:", file.name)
-      const response = await fetch("/api/admin/media", {
+      const signedRes = await fetch("/api/admin/media/signed-upload", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          originalName: compressed.name,
+          mimeType: compressed.type,
+        }),
       })
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: "Unknown error" }))
-        console.error("Upload failed:", errorData)
-        throw new Error(errorData.error || `Upload failed with status ${response.status}`)
+      const signed = await signedRes.json().catch(() => null)
+      if (!signedRes.ok || !signed?.path || !signed?.token || !signed?.publicUrl) {
+        throw new Error(signed?.error || "Failed to prepare upload")
       }
 
-      const data = await response.json()
-      console.log("Upload successful, URL:", data.url)
+      const supabase = getSupabaseBrowserClient()
+      const uploadResult = await supabase.storage
+        .from(signed.bucket || "uploads")
+        .uploadToSignedUrl(signed.path, signed.token, compressed)
+
+      if (uploadResult.error) {
+        throw new Error(uploadResult.error.message || "Upload failed")
+      }
+
+      const recordRes = await fetch("/api/admin/media", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          url: signed.publicUrl,
+          originalName: compressed.name,
+          mimeType: compressed.type,
+          size: compressed.size,
+          alt: key,
+        }),
+      })
+      const data = await recordRes.json().catch(() => null)
+      if (!recordRes.ok) {
+        throw new Error(data?.error || "Failed to save media record")
+      }
+
       handleChange(key, data.url)
       setMessage("Image uploaded successfully!")
       setTimeout(() => setMessage(""), 3000)
@@ -407,9 +432,9 @@ export default function SettingsPage() {
                             style={{ backgroundColor: getSetting(setting.key) }}
                           />
                         )}
-                      </div>
-                    </div>
-                  ))}
+            </div>
+          </div>
+        ))}
               </div>
             </div>
           </div>

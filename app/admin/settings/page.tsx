@@ -184,7 +184,13 @@ export default function SettingsPage() {
   const handleImageUpload = async (key: string, file: File) => {
     setSaving(true)
     try {
-      const compressed = await compressImageFile(file).catch(() => file)
+      // Preserve transparency for logo/favicon to avoid JPEG conversion adding a background.
+      const compressOpts =
+        key === "favicon_url" || key === "logo_url"
+          ? { maxWidth: 512, maxHeight: 512, maxBytes: 750_000, outputType: "image/png" as const }
+          : undefined
+
+      const compressed = await compressImageFile(file, compressOpts).catch(() => file)
 
       const signedRes = await fetch("/api/admin/media/signed-upload", {
         method: "POST",

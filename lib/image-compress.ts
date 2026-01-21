@@ -6,6 +6,7 @@ export type CompressOptions = {
   maxBytes?: number
   initialQuality?: number
   minQuality?: number
+  outputType?: "image/jpeg" | "image/png"
 }
 
 export async function compressImageFile(
@@ -16,10 +17,13 @@ export async function compressImageFile(
     maxBytes = 1_800_000,
     initialQuality = 0.82,
     minQuality = 0.5,
+    outputType = "image/jpeg",
   }: CompressOptions = {}
 ): Promise<File> {
   // Only attempt to compress images
   if (!file.type.startsWith("image/")) return file
+  // SVGs should not be rasterized here
+  if (file.type === "image/svg+xml") return file
 
   const img = await loadImage(file)
 
@@ -37,19 +41,20 @@ export async function compressImageFile(
 
   ctx.drawImage(img, 0, 0, dstW, dstH)
 
-  // Always output JPEG for reliable size reduction
+  // Default to JPEG for reliable size reduction, but allow PNG to preserve transparency (e.g. favicon/logo)
   let quality = initialQuality
-  let blob = await canvasToBlob(canvas, "image/jpeg", quality)
+  let blob = await canvasToBlob(canvas, outputType, quality)
 
   while (blob && blob.size > maxBytes && quality > minQuality) {
     quality = Math.max(minQuality, quality - 0.08)
-    blob = await canvasToBlob(canvas, "image/jpeg", quality)
+    blob = await canvasToBlob(canvas, outputType, quality)
   }
 
   if (!blob) return file
 
-  const outName = file.name.replace(/\.[^/.]+$/, "") + ".jpg"
-  return new File([blob], outName, { type: "image/jpeg" })
+  const ext = outputType === "image/png" ? "png" : "jpg"
+  const outName = file.name.replace(/\.[^/.]+$/, "") + `.${ext}`
+  return new File([blob], outName, { type: outputType })
 }
 
 function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality: number) {

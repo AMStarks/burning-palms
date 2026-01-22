@@ -7,6 +7,14 @@ import { GlobalColors } from "./components/GlobalColors";
 import { CustomCSS } from "./components/CustomCSS";
 import { getSiteSettings } from "@/lib/settings";
 
+function simpleHash(input: string) {
+  let h = 5381
+  for (let i = 0; i < input.length; i++) {
+    h = (h * 33) ^ input.charCodeAt(i)
+  }
+  return (h >>> 0).toString(16)
+}
+
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
@@ -23,7 +31,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const baseUrl = process.env.NEXTAUTH_URL || "https://burningpalms.au"
   // Always serve the browser favicon through `/icon` so we can apply consistent sizing/background
   // regardless of whether the admin uploaded a transparent PNG.
-  const favicon = "/icon"
+  const faviconVersion = simpleHash(siteSettings.faviconUrl || "")
+  const favicon = `/icon?v=${faviconVersion}`
   const shareTitle = siteSettings.shareTitle || siteSettings.title
   const shareDescription = siteSettings.shareDescription || siteSettings.description || siteSettings.tagline
   const shareImage = siteSettings.shareImageUrl || "/opengraph-image"

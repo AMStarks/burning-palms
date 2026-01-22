@@ -11,10 +11,14 @@ function simpleHash(input: string) {
   return (h >>> 0).toString(16)
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   const siteSettings = await getSiteSettings()
-  const v = simpleHash(siteSettings.faviconUrl || "")
-  const res = NextResponse.redirect(new URL(`/icon?v=${v}`, "http://localhost"), 307)
+  const rawFavicon = (siteSettings.faviconUrl || "/icon").trim()
+  const v = simpleHash(rawFavicon)
+  const target = `${rawFavicon}${rawFavicon.includes("?") ? "&" : "?"}v=${v}`
+
+  const base = new URL(req.url)
+  const res = NextResponse.redirect(new URL(target, base), 307)
   res.headers.set("Cache-Control", "no-store")
   return res
 }

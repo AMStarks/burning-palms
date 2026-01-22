@@ -29,10 +29,11 @@ const bebasNeue = Bebas_Neue({
 export async function generateMetadata(): Promise<Metadata> {
   const siteSettings = await getSiteSettings();
   const baseUrl = process.env.NEXTAUTH_URL || "https://burningpalms.au"
-  // Always serve the browser favicon through `/icon` so we can apply consistent sizing/background
-  // regardless of whether the admin uploaded a transparent PNG.
-  const faviconVersion = simpleHash(siteSettings.faviconUrl || "")
-  const favicon = `/icon?v=${faviconVersion}`
+  // Use the admin-provided favicon URL (when set) and add cache-busting.
+  // Browsers cache favicons aggressively; this forces updates when the favicon setting changes.
+  const rawFavicon = (siteSettings.faviconUrl || "/icon").trim()
+  const faviconVersion = simpleHash(rawFavicon)
+  const favicon = `${rawFavicon}${rawFavicon.includes("?") ? "&" : "?"}v=${faviconVersion}`
   const shareTitle = siteSettings.shareTitle || siteSettings.title
   const shareDescription = siteSettings.shareDescription || siteSettings.description || siteSettings.tagline
   const shareImage = siteSettings.shareImageUrl || "/opengraph-image"

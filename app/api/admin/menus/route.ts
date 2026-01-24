@@ -24,6 +24,34 @@ export async function GET(request: NextRequest) {
           },
         },
       })
+    } else {
+      // If a header menu already exists but "Shop"/"Collections" still point at Shopify (or #),
+      // automatically keep browsing on burningpalms.au by routing to our headless /shop page.
+      const shopDomains = ["shop.burningpalms.au", "myshopify.com"]
+
+      const topItems = await prisma.menuItem.findMany({
+        where: { menuId: existingHeader.id, parentId: null },
+        select: { id: true, label: true, url: true },
+      })
+
+      const needsRewrite = (url: string) => {
+        const u = (url || "").trim()
+        if (!u) return true
+        if (u === "#") return true
+        const lower = u.toLowerCase()
+        return shopDomains.some((d) => lower.includes(d))
+      }
+
+      const updates = topItems
+        .filter((i) => (i.label === "Shop" || i.label === "Collections") && needsRewrite(i.url))
+        .map((i) => i.id)
+
+      if (updates.length > 0) {
+        await prisma.menuItem.updateMany({
+          where: { id: { in: updates } },
+          data: { url: "/shop" },
+        })
+      }
     }
 
     const menus = await prisma.menu.findMany({

@@ -12,15 +12,10 @@ import { Menu } from "@/app/components/Menu"
 
 // Generate static paths for all products (for better SEO)
 export async function generateStaticParams() {
-  try {
-    const handles = await getAllProductHandles()
-    return handles.map((handle) => ({
-      handle: handle,
-    }))
-  } catch (error) {
-    console.error("Error generating static params:", error)
-    return []
-  }
+  // Important: Don't prebuild every product page at deploy time.
+  // We serve product pages dynamically with ISR (`revalidate`), so this can remain empty.
+  // This avoids long build times if Shopify has many products.
+  return []
 }
 
 // Revalidate pages every 60 seconds (ISR - Incremental Static Regeneration)

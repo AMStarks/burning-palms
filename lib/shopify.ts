@@ -38,97 +38,148 @@ export type ShopifyProduct = {
   }>
 }
 
-/**
- * Fetch all products from Shopify
- */
-export async function getProducts(limit = 20): Promise<ShopifyProduct[]> {
+type ShopifyProductPage = {
+  products: ShopifyProduct[]
+  hasNextPage: boolean
+  endCursor: string | null
+}
+
+async function fetchProductsPage(first: number, after?: string | null): Promise<ShopifyProductPage> {
   if (!client) {
-    console.error('Shopify client not initialized. Check environment variables.')
-    return []
+    console.error("Shopify client not initialized. Check environment variables.")
+    return { products: [], hasNextPage: false, endCursor: null }
   }
 
-  try {
-    const query = `
-      query getProducts($first: Int!) {
-        products(first: $first) {
-          edges {
-            node {
-              id
-              title
-              handle
-              description
-              priceRange {
-                minVariantPrice {
-                  amount
-                  currencyCode
+  const query = `
+    query getProducts($first: Int!, $after: String) {
+      products(first: $first, after: $after) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        edges {
+          node {
+            id
+            title
+            handle
+            description
+            priceRange {
+              minVariantPrice {
+                amount
+                currencyCode
+              }
+            }
+            images(first: 5) {
+              edges {
+                node {
+                  url
+                  altText
                 }
               }
-              images(first: 5) {
-                edges {
-                  node {
-                    url
-                    altText
+            }
+            variants(first: 10) {
+              edges {
+                node {
+                  id
+                  title
+                  price {
+                    amount
+                    currencyCode
                   }
-                }
-              }
-              variants(first: 10) {
-                edges {
-                  node {
-                    id
-                    title
-                    price {
-                      amount
-                      currencyCode
-                    }
-                    availableForSale
-                  }
+                  availableForSale
                 }
               }
             }
           }
         }
       }
-    `
-
-    const response = await client.request(query, {
-      variables: { first: limit },
-    })
-
-    // Check for GraphQL errors
-    if (response?.errors) {
-      console.error('GraphQL errors:', response.errors)
-      return []
     }
+  `
 
-    // Handle different response structures
-    const responseData = response?.data || response
-    if (!responseData?.products) {
-      console.error('Unexpected response structure:', response)
-      return []
-    }
+  const response = await client.request(query, {
+    variables: { first, after: after || null },
+  })
 
-    return responseData.products.edges.map((edge: any) => ({
-      id: edge.node.id,
-      title: edge.node.title,
-      handle: edge.node.handle,
-      description: edge.node.description || '',
-      price: edge.node.priceRange.minVariantPrice.amount,
-      currency: edge.node.priceRange.minVariantPrice.currencyCode,
-      images: edge.node.images.edges.map((img: any) => ({
-        url: img.node.url,
-        altText: img.node.altText,
-      })),
-      variants: edge.node.variants.edges.map((v: any) => ({
-        id: v.node.id,
-        title: v.node.title,
-        price: v.node.price.amount,
-        available: v.node.availableForSale,
-      })),
-    }))
+  if (response?.errors) {
+    console.error("GraphQL errors:", response.errors)
+    return { products: [], hasNextPage: false, endCursor: null }
+  }
+
+  const responseData = response?.data || response
+  const productsNode = responseData?.products
+  if (!productsNode) {
+    console.error("Unexpected response structure:", response)
+    return { products: [], hasNextPage: false, endCursor: null }
+  }
+
+  const products: ShopifyProduct[] = productsNode.edges.map((edge: any) => ({
+    id: edge.node.id,
+    title: edge.node.title,
+    handle: edge.node.handle,
+    description: edge.node.description || "",
+    price: edge.node.priceRange.minVariantPrice.amount,
+    currency: edge.node.priceRange.minVariantPrice.currencyCode,
+    images: edge.node.images.edges.map((img: any) => ({
+      url: img.node.url,
+      altText: img.node.altText,
+    })),
+    variants: edge.node.variants.edges.map((v: any) => ({
+      id: v.node.id,
+      title: v.node.title,
+      price: v.node.price.amount,
+      available: v.node.availableForSale,
+    })),
+  }))
+
+  return {
+    products,
+    hasNextPage: !!productsNode.pageInfo?.hasNextPage,
+    endCursor: productsNode.pageInfo?.endCursor || null,
+  }
+}
+
+/**
+ * Fetch all products from Shopify
+ */
+export async function getProducts(limit = 20): Promise<ShopifyProduct[]> {
+  try {
+    const page = await fetchProductsPage(Math.min(250, Math.max(1, limit)), null)
+    return page.products
   } catch (error) {
     console.error('Error fetching products from Shopify:', error)
     return []
   }
+}
+
+/**
+ * Fetch ALL products from Shopify (paginated). Use this for /shop.
+ * Safety: stops at maxProducts to avoid very large fetches causing timeouts.
+ */
+export async function getAllProducts(maxProducts = 2000): Promise<ShopifyProduct[]> {
+  if (!client) {
+    console.error("Shopify client not initialized. Check environment variables.")
+    return []
+  }
+
+  const all: ShopifyProduct[] = []
+  let after: string | null = null
+  let hasNextPage = true
+
+  try {
+    while (hasNextPage && all.length < maxProducts) {
+      const remaining = maxProducts - all.length
+      const first = Math.min(250, remaining)
+      const page = await fetchProductsPage(first, after)
+      all.push(...page.products)
+      hasNextPage = page.hasNextPage
+      after = page.endCursor
+      if (page.products.length === 0) break
+    }
+  } catch (error) {
+    console.error("Error fetching all products from Shopify:", error)
+  }
+
+  return all
 }
 
 /**
@@ -232,8 +283,12 @@ export async function getAllProductHandles(): Promise<string[]> {
 
   try {
     const query = `
-      query getAllProductHandles($first: Int!) {
-        products(first: $first) {
+      query getAllProductHandles($first: Int!, $after: String) {
+        products(first: $first, after: $after) {
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
           edges {
             node {
               handle
@@ -243,24 +298,36 @@ export async function getAllProductHandles(): Promise<string[]> {
       }
     `
 
-    const response = await client.request(query, {
-      variables: { first: 250 }, // Shopify allows up to 250 products per query
-    })
+    const handles: string[] = []
+    let after: string | null = null
+    let hasNextPage = true
+    const maxHandles = 5000 // safety cap
 
-    // Check for GraphQL errors
-    if (response?.errors) {
-      console.error('GraphQL errors:', response.errors)
-      return []
+    while (hasNextPage && handles.length < maxHandles) {
+      const first = Math.min(250, maxHandles - handles.length)
+      const response = await client.request(query, {
+        variables: { first, after: after || null },
+      })
+
+      if (response?.errors) {
+        console.error("GraphQL errors:", response.errors)
+        return handles
+      }
+
+      const responseData = response?.data || response
+      const productsNode = responseData?.products
+      if (!productsNode) {
+        console.error("Unexpected response structure:", response)
+        return handles
+      }
+
+      handles.push(...productsNode.edges.map((edge: any) => edge.node.handle))
+      hasNextPage = !!productsNode.pageInfo?.hasNextPage
+      after = productsNode.pageInfo?.endCursor || null
+      if (productsNode.edges.length === 0) break
     }
 
-    // Handle different response structures
-    const responseData = response?.data || response
-    if (!responseData?.products) {
-      console.error('Unexpected response structure:', response)
-      return []
-    }
-
-    return responseData.products.edges.map((edge: any) => edge.node.handle)
+    return handles
   } catch (error) {
     console.error('Error fetching product handles from Shopify:', error)
     return []

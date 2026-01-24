@@ -1,6 +1,6 @@
 import Image from "next/image"
 import Link from "next/link"
-import { getProducts } from "@/lib/shopify"
+import { getAllProducts } from "@/lib/shopify"
 import { getSiteSettings } from "@/lib/settings"
 import { getMenuByLocation } from "@/lib/menus"
 import { Menu } from "@/app/components/Menu"
@@ -34,8 +34,8 @@ export default async function ShopPage() {
   const headerClasses = getHeaderClasses(headerFooterSettings)
   const footerGridStyle = getFooterGridStyle(headerFooterSettings.footerColumns || 4)
 
-  // For now, pull up to 250 products (Shopify max per query). Later we can paginate/filter.
-  const products = await getProducts(250)
+  // Fetch ALL products (Shopify paginated). Later we can paginate/filter on this page.
+  const products = await getAllProducts()
 
   return (
     <div className="min-h-screen bg-background">

@@ -1,57 +1,45 @@
-import type { Metadata } from "next"
-import Link from "next/link"
 import Image from "next/image"
-import { notFound } from "next/navigation"
-import { prisma } from "@/lib/prisma"
+import Link from "next/link"
+import { getProducts } from "@/lib/shopify"
 import { getSiteSettings } from "@/lib/settings"
-import { getLayoutSettings, getContainerWidthClass, getContentWidthClass } from "@/lib/layout-settings"
-import { getHeaderFooterSettings, getHeaderClasses, getFooterGridStyle } from "@/lib/header-footer-settings"
 import { getMenuByLocation } from "@/lib/menus"
 import { Menu } from "@/app/components/Menu"
+import { getLayoutSettings, getContainerWidthClass } from "@/lib/layout-settings"
+import { getHeaderFooterSettings, getHeaderClasses, getFooterGridStyle } from "@/lib/header-footer-settings"
 import { getFooterWidgets } from "@/lib/footer-widgets"
 import { FooterWidget } from "@/app/components/FooterWidget"
-import { getPageSections } from "@/lib/page-sections"
-import { SectionRenderer } from "@/app/components/page-sections"
+import {
+  getProductDisplaySettings,
+  getProductGridClasses,
+  getProductCardClasses,
+  getProductImageAspectRatio,
+} from "@/lib/shop-settings"
 
 export const dynamic = "force-dynamic"
+export const revalidate = 60
 
-export default async function CmsPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params
-
-  // Home is served at "/"
-  if (!slug || slug === "home") {
-    notFound()
-  }
-
-  const page = await prisma.page.findUnique({
-    where: { slug },
-    select: { id: true, title: true, content: true, excerpt: true, status: true },
-  })
-
-  if (!page) {
-    notFound()
-  }
-
-  // Draft pages are not "online". They should 404 publicly until published.
-  if (page.status !== "published") {
-    notFound()
-  }
-
+export default async function ShopPage() {
   const siteSettings = await getSiteSettings()
   const layoutSettings = await getLayoutSettings()
   const headerFooterSettings = await getHeaderFooterSettings()
   const headerMenu = await getMenuByLocation("header")
   const footerWidgets = await getFooterWidgets()
-  const pageSections = await getPageSections(page.id)
+
+  const productSettings = await getProductDisplaySettings()
+  const gridClasses = getProductGridClasses(productSettings)
+  const cardClasses = getProductCardClasses(productSettings)
+  const imageAspectRatio = getProductImageAspectRatio(productSettings)
 
   const containerClass = getContainerWidthClass(layoutSettings.containerWidth || "7xl")
-  const contentClass = getContentWidthClass(layoutSettings.contentWidth || "7xl")
   const headerClasses = getHeaderClasses(headerFooterSettings)
   const footerGridStyle = getFooterGridStyle(headerFooterSettings.footerColumns || 4)
 
+  // For now, pull up to 250 products (Shopify max per query). Later we can paginate/filter.
+  const products = await getProducts(250)
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Navigation (match homepage) */}
+      {/* Header */}
       <nav className={headerClasses.nav}>
         <div className={`${containerClass} mx-auto px-4 sm:px-6 lg:px-8`}>
           <div className={`${headerClasses.container} ${headerClasses.height}`}>
@@ -93,23 +81,50 @@ export default async function CmsPage({ params }: { params: Promise<{ slug: stri
         </div>
       </nav>
 
-      {/* Page content */}
-      <main className="relative">
-        {pageSections.length > 0 ? (
-          pageSections.map((section) => <SectionRenderer key={section.id} section={section} />)
+      {/* Page */}
+      <main className={`${containerClass} mx-auto px-4 sm:px-6 lg:px-8 py-10`}>
+        <div className="mb-10 text-center">
+          <h1 className="font-display text-5xl text-accent-dark mb-3">SHOP</h1>
+          <p className="text-foreground/70">
+            Browse the full collection. Checkout is handled securely by Shopify.
+          </p>
+        </div>
+
+        {products.length === 0 ? (
+          <div className="text-center text-foreground/70 py-16">
+            No products found yet.
+          </div>
         ) : (
-          <div className={`${contentClass} mx-auto px-4 sm:px-6 lg:px-8 py-12`}>
-            <h1 className="font-display text-4xl md:text-5xl text-accent-dark mb-6">
-              {page.title}
-            </h1>
-            {page.content ? (
-              <div
-                className="prose prose-lg max-w-none text-foreground/80"
-                dangerouslySetInnerHTML={{ __html: page.content }}
-              />
-            ) : (
-              <p className="text-foreground/70">No content yet.</p>
-            )}
+          <div className={gridClasses}>
+            {products.map((p) => {
+              const img = p.images?.[0]
+              return (
+                <Link key={p.id} href={`/products/${p.handle}`} className={cardClasses}>
+                  <div className={`${imageAspectRatio} bg-gradient-to-br from-accent-yellow/20 to-accent-orange/20 rounded-lg overflow-hidden mb-4 relative`}>
+                    {img?.url ? (
+                      <Image
+                        src={img.url}
+                        alt={img.altText || p.title}
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-foreground/40">
+                        No image
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-1">
+                    <h3 className="font-display text-2xl text-accent-dark">{p.title}</h3>
+                    <div className="text-accent-orange font-semibold">
+                      ${p.price} {p.currency}
+                    </div>
+                  </div>
+                </Link>
+              )
+            })}
           </div>
         )}
       </main>
@@ -146,38 +161,5 @@ export default async function CmsPage({ params }: { params: Promise<{ slug: stri
       </footer>
     </div>
   )
-}
-
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  const { slug } = await params
-  const siteSettings = await getSiteSettings()
-  const baseUrl = process.env.NEXTAUTH_URL || "https://burningpalms.au"
-
-  const page = await prisma.page.findUnique({
-    where: { slug },
-    select: { title: true, excerpt: true, content: true, status: true },
-  })
-
-  if (!page) {
-    return {}
-  }
-
-  const description =
-    page.excerpt ||
-    (page.content ? page.content.replace(/<[^>]*>/g, "").trim().slice(0, 160) : "") ||
-    siteSettings.description
-
-  return {
-    metadataBase: new URL(baseUrl),
-    title: page.title,
-    description,
-    robots: page.status === "published" ? undefined : { index: false, follow: false },
-    openGraph: {
-      title: page.title,
-      description,
-      url: `${baseUrl}/${slug}`,
-      type: "article",
-    },
-  }
 }
 

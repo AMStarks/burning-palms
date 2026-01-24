@@ -74,10 +74,10 @@ export default async function ProductPage({
               </div>
             ) : (
               <div className="hidden md:flex space-x-8">
-                <a href="#" className="text-foreground hover:text-accent-orange transition-colors">Shop</a>
-                <a href="#" className="text-foreground hover:text-accent-orange transition-colors">Collections</a>
-                <a href="#" className="text-foreground hover:text-accent-orange transition-colors">About</a>
-                <a href="#" className="text-foreground hover:text-accent-orange transition-colors">Contact</a>
+                <Link href="/shop" className="text-foreground hover:text-accent-orange transition-colors">Shop</Link>
+                <Link href="/shop" className="text-foreground hover:text-accent-orange transition-colors">Collections</Link>
+                <Link href="/about" className="text-foreground hover:text-accent-orange transition-colors">About</Link>
+                <Link href="/contact" className="text-foreground hover:text-accent-orange transition-colors">Contact</Link>
               </div>
             )}
 

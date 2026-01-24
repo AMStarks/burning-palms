@@ -16,10 +16,10 @@ export async function GET(request: NextRequest) {
           location: "header",
           items: {
             create: [
-              { label: "Shop", url: "#", order: 0 },
-              { label: "Collections", url: "#", order: 1 },
-              { label: "About", url: "#", order: 2 },
-              { label: "Contact", url: "#", order: 3 },
+              { label: "Shop", url: "/shop", order: 0 },
+              { label: "Collections", url: "/shop", order: 1 },
+              { label: "About", url: "/about", order: 2 },
+              { label: "Contact", url: "/contact", order: 3 },
             ],
           },
         },

@@ -305,7 +305,7 @@ export async function getAllProductHandles(): Promise<string[]> {
 
     while (hasNextPage && handles.length < maxHandles) {
       const first = Math.min(250, maxHandles - handles.length)
-      const response = await client.request(query, {
+      const response: any = await client.request(query, {
         variables: { first, after: after || null },
       })
 
@@ -314,8 +314,8 @@ export async function getAllProductHandles(): Promise<string[]> {
         return handles
       }
 
-      const responseData = response?.data || response
-      const productsNode = responseData?.products
+      const responseData: any = response?.data || response
+      const productsNode: any = responseData?.products
       if (!productsNode) {
         console.error("Unexpected response structure:", response)
         return handles
